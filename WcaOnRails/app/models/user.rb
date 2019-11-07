@@ -23,6 +23,7 @@ class User < ApplicationRecord
   has_many :preferred_events, through: :user_preferred_events, source: :event
   has_many :bookmarked_competitions, dependent: :destroy
   has_many :competitions_bookmarked, through: :bookmarked_competitions, source: :competition
+  has_one :permission, as: :entity
 
   scope :confirmed_email, -> { where.not(confirmed_at: nil) }
 

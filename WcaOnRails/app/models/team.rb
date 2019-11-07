@@ -3,6 +3,7 @@
 class Team < ApplicationRecord
   has_many :team_members, dependent: :destroy
   has_many :current_members, -> { current }, class_name: "TeamMember"
+  has_one :permission, as: :entity
 
   default_scope -> { where(hidden: false) }
   scope :with_hidden, -> { unscope(where: :hidden) }
