@@ -19,10 +19,10 @@
     <% previous_type = nil %>
     <% previous_value = 0 %>
     <% rows.each do |row| %>
-      <% result = LightResult.new(row) %>
-      <% competition = @competitions_by_id[row["competitionId"]] %>
-      <% type = row["type"] %>
-      <% value = row["value"] %>
+      <% result = row %>
+      <% competition = @competitions_by_id[row.competitionId] %>
+      <% type = row.type %>
+      <% value = type == "single" ? row.best : row.average %>
       <% tied_previous = (type == previous_type && value == previous_value) %>
       <% is_average = type == "average" %>
 

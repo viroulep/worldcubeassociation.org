@@ -2,6 +2,7 @@
 
 class Result < ApplicationRecord
   include Resultable
+  attr_accessor :type
 
   self.table_name = "Results"
 

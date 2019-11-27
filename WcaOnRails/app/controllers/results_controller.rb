@@ -1,9 +1,16 @@
 # frozen_string_literal: true
 
 class ResultsController < ApplicationController
-  def rankings
-    support_old_links!
+  before_action :support_old_links!, only: [:rankings, :records]
+  before_action :set_year_param!, only: [:rankings, :records]
+  before_action :set_record_view!, only: [:records]
+  before_action :set_ranking_view!, only: [:rankings]
+  before_action :set_type!, only: [:rankings]
 
+  TYPE = ["single", "average"].freeze
+  QUANTITIES = ["100", "1000"].freeze
+
+  def rankings
     # Default params
     params[:region] ||= "world"
     params[:years] ||= "all years"
@@ -13,22 +20,13 @@ class ResultsController < ApplicationController
 
     @quantities = ["100", "1000"]
 
-    if !@types.include?(params[:type])
-      flash[:danger] = t(".unknown_type")
-      return redirect_to rankings_path(params[:event_id], "single")
-    end
-    @is_average = params[:type] == @types[1]
-    value = @is_average ? "average" : "best"
-    capitalized_type_param = params[:type].capitalize
+    value = @rank_type.value
+    capitalized_type_param = @rank_type.capitalized
 
-    @is_by_region = params[:show] == "by region"
-    splitted_show_param = params[:show].split
-    @show = splitted_show_param[0].to_i
-    @is_persons = splitted_show_param[1] == "persons"
-    @is_results = splitted_show_param[1] == "results"
-    limit_condition = "LIMIT #{@show}"
+    @limit = @ranking_view.limit
+    limit_condition = "LIMIT #{@limit}"
 
-    if @is_persons
+    if @ranking_view.persons?
       @query = <<-SQL
         SELECT
           result.*,
@@ -48,7 +46,7 @@ class ResultsController < ApplicationController
         JOIN Results result ON result.id = valueAndId % 1000000000
         ORDER BY value, personName
       SQL
-    elsif @is_results
+    elsif @ranking_view.results?
       if @is_average
         subquery = <<-SQL
           SELECT
@@ -95,7 +93,7 @@ class ResultsController < ApplicationController
           #{limit_condition}
         SQL
       end
-    elsif @is_by_region
+    elsif @ranking_view.region?
       @query = <<-SQL
         SELECT
           result.*,
@@ -124,115 +122,115 @@ class ResultsController < ApplicationController
   end
 
   def records
-    support_old_links!
-
     # Default params
     params[:event_id] ||= "all events"
     params[:region] ||= "world"
-    params[:years] ||= "all years"
-    params[:show] ||= "mixed"
 
-    @shows = ["mixed", "slim", "separate", "history", "mixed history"]
-    @is_mixed = params[:show] == @shows[0]
-    @is_slim = params[:show] == @shows[1]
-    @is_separate = params[:show] == @shows[2]
-    @is_history = params[:show] == @shows[3]
-    @is_mixed_history = params[:show] == @shows[4]
-    @is_histories = @is_history || @is_mixed_history
+    events, countries, @record_names = restrictions_from_params
 
-    shared_constants_and_conditions
-
-    if !@is_histories
-      @query = <<-SQL
-        SELECT *
-        FROM
-          (#{current_records_query("best", "single")}
-          UNION
-          #{current_records_query("average", "average")}) helper
-        ORDER BY
-          `rank`, type DESC, year, month, day, roundTypeId, personName
-      SQL
-    else
-      if @is_history
-        order = 'event.`rank`, type desc, value, year desc, month desc, day desc, roundType.`rank` desc'
-      else
-        order = 'year desc, month desc, day desc, event.`rank`, type desc, value, roundType.`rank` desc'
+    scope_with_restrictions = lambda do |base|
+      if @year_param.until?
+        base = base.where("year < ?", @year_param.year)
       end
+      if @year_param.only?
+        # NOTE: intentionally not using (year: ...) to be able to use it
+        # in a join wich has only one 'year' field.
+        base = base.where("year = ?", @year_param.year)
+      end
+      if events
+        base = base.where(eventId: events)
+      end
+      if countries.any?
+        base = base.where(countryId: countries)
+      end
+      base
+    end
 
-      @query = <<-SQL
-        SELECT
-          year, month, day,
-          event.id             eventId,
-          event.name           eventName,
-          event.cellName       eventCellName,
-          result.type          type,
-          result.value         value,
-          result.formatId      formatId,
-          result.roundTypeId   roundTypeId,
-          event.format         valueFormat,
-                               recordName,
-          result.personId      personId,
-          result.personName    personName,
-          result.countryId     countryId,
-          country.name         countryName,
-          competition.id       competitionId,
-          competition.cellName competitionName,
-          value1, value2, value3, value4, value5
-        FROM
-          (SELECT Results.*, 'single' type, best    value, regionalSingleRecord  recordName FROM Results WHERE regionalSingleRecord<>'' UNION
-            SELECT Results.*, 'average' type, average value, regionalAverageRecord recordName FROM Results WHERE regionalAverageRecord<>'') result,
-          Events event,
-          RoundTypes roundType,
-          Competitions competition,
-          Countries country
-        WHERE event.id = eventId
-          AND event.`rank` < 1000
-          AND roundType.id = roundTypeId
-          AND competition.id = competitionId
-          AND country.id = result.countryId
-          #{@region_condition}
-          #{@event_condition}
-          #{@years_condition}
-        ORDER BY
-          #{order}
-      SQL
+    @results_rows = []
+
+    if !@record_view.any_history?
+      csr = scope_with_restrictions.call(ConciseSingleResult.group(:eventId))
+      car = scope_with_restrictions.call(ConciseAverageResult.group(:eventId))
+      # This is a lambda that turns a "best" result for a given eventId into the
+      # corresponding sql restriction.
+      # The goal is to let the final query get all results matching for that "best"
+      # result. E.g: if for 2x2 the min value is "0.49" for one specific result
+      # id, we still need to get all single results whose value is "0.49", not
+      # just the one the "minimum()" returned.
+      to_where_condition = ->(event_id, valueAndId, field) { "(eventId='#{event_id}' and #{field}='#{valueAndId/ConciseAverageResult::RESULT_ROW_MASK}')" }
+
+      singles = csr.minimum(:valueAndId).map { |e, a| to_where_condition.call(e, a, "best") }
+      averages = car.minimum(:valueAndId).map { |e, a| to_where_condition.call(e, a, "average") }
+      @results_rows.concat(scope_with_restrictions
+        .call(Result.left_joins(:competition).where(singles.join(" or ")))
+        .order("year, month, day, roundTypeId, personName")
+        .map { |r|
+          r.type = "single"
+          r
+        })
+      @results_rows.concat(scope_with_restrictions
+        .call(Result.left_joins(:competition).where(averages.join(" or ")))
+        .order("year, month, day, roundTypeId, personName")
+        .map { |r|
+          r.type = "average"
+          r
+        })
+    else
+      result_base = Result.left_joins(:competition)
+      unscoped_single = result_base.where(regionalSingleRecord: @record_names)
+      unscoped_average = result_base.where(regionalAverageRecord: @record_names)
+      @results_rows.concat(scope_with_restrictions.call(unscoped_single)
+        .map { |r|
+          r.type = "single"
+          r
+        })
+      @results_rows.concat(scope_with_restrictions.call(unscoped_average)
+        .map { |r|
+          r.type = "average"
+          r
+        })
+    end
+
+    # Build the map of competitions based on the the competition ids appearing
+    # in the results rows.
+    @competitions_by_id = Hash[Competition.where(id: @results_rows.map(&:competitionId).uniq).map { |c| [c.id, c] }]
+
+    # Do a final sort by event so we can just iterate through the rows in the view.
+    if @record_view.any_history?
+      @results_rows.sort_by! do |r|
+        c = @competitions_by_id[r.competitionId]
+        fields = [-c.year, -c.month, -c.day]
+        if @record_view.history?
+          fields.unshift(r.event.rank, r.type[1])
+        else
+          fields.push(r.event.rank, r.type[1])
+        end
+      end
+    else
+      @results_rows.sort_by! { |r| r.event.rank }
     end
   end
 
-  private def current_records_query(value, type)
-    <<-SQL
-      SELECT
-        '#{type}'            type,
-                             result.*,
-                             value,
-        event.name           eventName,
-        event.cellName       eventCellName,
-                             format,
-        country.name         countryName,
-        competition.cellName competitionName,
-                             `rank`, year, month, day
-      FROM
-        (SELECT eventId recordEventId, MIN(valueAndId) DIV 1000000000 value
-          FROM Concise#{type.capitalize}Results result
-          WHERE 1
-          #{@event_condition}
-          #{@region_condition}
-          #{@years_condition}
-          GROUP BY eventId) record,
-        Results result,
-        Events event,
-        Countries country,
-        Competitions competition
-      WHERE result.#{value} = value
-        #{@event_condition}
-        #{@region_condition}
-        #{@years_condition}
-        AND result.eventId = recordEventId
-        AND event.id       = result.eventId
-        AND country.id     = result.countryId
-        AND competition.id = result.competitionId
-        AND event.`rank` < 990
-    SQL
+  private def restrictions_from_params
+    event = nil
+
+    if params[:event_id] != "all events"
+      event = Event.c_find!(params[:event_id]).id
+    end
+
+    @continent = Continent.c_find(params[:region])
+    @country = Country.c_find(params[:region])
+    countries = []
+    record_names = ["WR"]
+
+    if @continent.present?
+      countries.concat(@continent.country_ids)
+      record_names << @continent.recordName
+    elsif @country.present?
+      countries << @country.id
+      record_names << "NR"
+    end
+    [event, countries, record_names]
   end
 
   private def shared_constants_and_conditions
@@ -289,6 +287,40 @@ class ResultsController < ApplicationController
     # We are not supporting the all option anymore!
     if params[:show]&.include?("all")
       params[:show] = nil
+    end
+  end
+
+  private def set_year_param!
+    @year_param = ControllerParams::Year.new(params[:years])
+    unless @year_param.valid?
+      # TODO: flash[:danger] = t(".unknown_type")
+      flash[:danger] = "Unknown year param"
+      return redirect_to records_path
+    end
+  end
+
+  private def set_record_view!
+    @record_view = ControllerParams::RecordsShow.new(params[:show])
+    unless @record_view.valid?
+      # TODO: flash[:danger] = t(".unknown_type")
+      flash[:danger] = "Unknown show param"
+      return redirect_to records_path
+    end
+  end
+
+  private def set_ranking_view!
+    @ranking_view = ControllerParams::RankingsShow.new(params[:show])
+    unless @ranking_view.valid?
+      flash[:danger] = t("results.ranking.unknown_show")
+      return redirect_to records_path
+    end
+  end
+
+  private def set_type!
+    @rank_type = ControllerParams::Type.new(params[:type])
+    unless @rank_type.valid?
+      flash[:danger] = t("results.ranking.unknown_type")
+      return redirect_to rankings_path
     end
   end
 end

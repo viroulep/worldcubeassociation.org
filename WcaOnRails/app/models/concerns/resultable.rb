@@ -40,6 +40,10 @@ module Resultable
       Format.c_find(formatId)
     end
 
+    def country
+      Country.c_find(countryId)
+    end
+
     validate :validate_each_solve, if: :event
     def validate_each_solve
       solve_times.each_with_index do |solve_time, i|

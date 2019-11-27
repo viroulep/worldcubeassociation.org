@@ -1,21 +1,22 @@
 <%= wca_table table_class: "wca-results" do %>
+  <% is_multi = ["333mbf", "333mbo"].include?(rows.first.eventId) %>
   <thead>
     <tr>
       <th class="date"> <%= t("results.table_elements.date_circa") %> </th>
-      <% if @is_mixed_history %>
+      <% if @record_view.mixed_history? %>
         <th class="event"> <%= t("results.table_elements.event") %> </th>
       <% end %>
       <% unless params[:region] == "world" %>
         <th class="record"> <%= t("results.table_elements.record") %> </th>
       <% end %>
       <th class="single"> <%= t("results.table_elements.type_options.single") %> </th>
-      <% unless @is_history && (rows.first["eventId"] == "333mbf" || rows.first["eventId"] == "333mbo") %>
+      <% unless @record_view.history? && is_multi %>
         <th class="average"> <%= t("results.table_elements.type_options.average") %> </th>
       <% end %>
       <th class="name"> <%= t("results.table_elements.name") %> </th>
       <th class="country"> <%= t("results.table_elements.citizen_of") %> </th>
       <th class="competition"> <%= t("results.table_elements.competition") %> </th>
-      <% unless @is_history && (rows.first["eventId"] == "333mbf" || rows.first["eventId"] == "333mbo") %>
+      <% unless @record_view.history? && is_multi %>
         <th class="solves" colspan="5"> <%= t("results.table_elements.solves") %> </th>
       <% end %>
 
@@ -26,15 +27,15 @@
 
   <tbody>
     <% rows.each do |row| %>
-      <% result = LightResult.new(row) %>
-      <% competition = @competitions_by_id[row["competitionId"]] %>
-      <% is_average = row["type"] == 'average' %>
-      <% value = row["value"] %>
-      <% date = Date.new(row["year"], row["month"], row["day"]) %>
-
+      <% competition = @competitions_by_id[row.competitionId] %>
+      <% result = row %>
+      <% is_average = result.type == "average" %>
+      <% value = is_average ? result.average : result.best %>
       <tr>
-        <td class="date"> <%= l(date, format: "%b %d, %Y") %> </td>
-        <% if @is_mixed_history %>
+        <%# NOTE: pretty sure it's accurate enough, currently the record page always
+          gives the first competition day %>
+        <td class="date"> <%= l(competition.start_date, format: "%b %d, %Y") %> </td>
+        <% if @record_view.mixed_history? %>
           <td class="event">
             <%= link_to rankings_path(result.event.id, (is_average ? "average" : "single")) do %>
               <%= cubing_icon result.event.id %>
@@ -47,16 +48,16 @@
         <% end %>
         <% if !is_average %>
           <td class="single"> <%= SolveTime.new(result.event.id, :single, value).clock_format %> </td>
-          <% unless @is_history && (rows.first["eventId"] == "333mbf" || rows.first["eventId"] == "333mbo") %>
+          <% unless @record_view.history? && is_multi %>
             <td class="blank-cell"><br></td>
           <% end %>
         <% else %>
-          <% unless @is_history && (rows.first["eventId"] == "333mbf" || rows.first["eventId"] == "333mbo") %>
+          <% unless @record_view.history? && is_multi %>
             <td class="blank-cell"><br></td>
             <td class="average"> <%= SolveTime.new(result.event.id, :average, value).clock_format %> </td>
           <% end %>
         <% end %>
-        <td class="name"> <%= link_to result.personName, person_path(result.personId) %> </td>
+        <td class="name"> <%= link_to result.personName, person_url(result.personId) %> </td>
         <td class="country"> <%= flag_icon result.country.iso2 %> <%= result.country.name %> </td>
         <td class="competition"> <%= flag_icon competition.country.iso2 if competition.country.real? %> <%= link_to competition.name, competition_path(competition.id) %> </td>
         <% if is_average %>

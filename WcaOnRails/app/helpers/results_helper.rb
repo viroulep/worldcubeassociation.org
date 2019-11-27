@@ -69,9 +69,9 @@ module ResultsHelper
     single_rows = []
     average_rows = []
     rows
-      .group_by { |row| row["eventId"] }
+      .group_by(&:eventId)
       .each do |event_id, event_rows|
-        singles, averages = event_rows.partition { |row| row["type"] == "single" }
+        singles, averages = event_rows.partition { |row| row.type == "single" }
         balance = singles.size - averages.size
         if balance < 0
           singles += Array.new(-balance, nil)

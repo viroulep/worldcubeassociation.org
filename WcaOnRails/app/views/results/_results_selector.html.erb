@@ -38,7 +38,7 @@
   <div class="form-group">
     <%= label_tag(t("results.selector_elements.type_selector.type")) %>
     <div id="type" class="btn-group">
-      <% @types.each do |type| %>
+      <% ResultsController::TYPE.each do |type| %>
         <%= link_to t("results.selector_elements.type_selector.#{type}"),
                       request.params.merge(type: type),
                       class: "btn btn-primary" + (type == params[:type] ? " active" : "") %>
@@ -50,17 +50,18 @@
 <div class="form-group">
   <%= label_tag(t("results.selector_elements.years_selector.years")) %>
   <div id="years" class="btn-group">
-    <%= link_to t("results.selector_elements.years_selector.all_years"), request.params.merge(years: "all years"), class: "btn btn-info" + (@is_all_years ? " active" : "") %>
+    <%= link_to t("results.selector_elements.years_selector.all_years"), request.params.merge(years: "all years"), class: "btn btn-info" + (@year_param.all? ? " active" : "") %>
+    <%# DRY this with class.send() %>
     <div class="btn-group">
       <ul class="dropdown-menu years-only">
-        <% @years.each do |year| %>
-          <li class="only <%= (@is_only && year.to_s == @year ? " active" : "") %>"><%= link_to year.to_s, request.params.merge(years: "only #{year}") %></li>
+        <% ControllerParams::Year.all.each do |year| %>
+          <li class="only <%= (@year_param.only? && year.to_s == @year_param.year ? " active" : "") %>"><%= link_to year.to_s, request.params.merge(years: "only #{year}") %></li>
         <% end %>
       </ul>
-      <label id="only-years" class="btn btn-info <%= @is_only ? " active" : "" %>" data-toggle="dropdown">
+      <label id="only-years" class="btn btn-info <%= @year_param.only? ? " active" : "" %>" data-toggle="dropdown">
         <span class="caption">
-          <% if @is_only %>
-            <%= t("results.selector_elements.years_selector.only_html", year: @year) %>
+          <% if @year_param.only? %>
+            <%= t("results.selector_elements.years_selector.only_html", year: @year_param.year) %>
           <% else %>
             <%= t("results.selector_elements.years_selector.only") %>
           <% end %>
@@ -69,14 +70,14 @@
     </div>
     <div class="btn-group">
       <ul class="dropdown-menu years-until">
-        <% @years.each do |year| %>
-          <li class="until <%= (@is_until && year.to_s == @year ? " active" : "") %>"><%= link_to year.to_s, request.params.merge(years: "until #{year}") %></li>
+        <% ControllerParams::Year.all.each do |year| %>
+          <li class="until <%= (@year_param.until? && year.to_s == @year_param ? " active" : "") %>"><%= link_to year.to_s, request.params.merge(years: "until #{year}") %></li>
         <% end %>
       </ul>
-      <label id="until-years" class="btn btn-info <%= @is_until ? " active" : "" %>" data-toggle="dropdown">
+      <label id="until-years" class="btn btn-info <%= @year_param.until? ? " active" : "" %>" data-toggle="dropdown">
         <span class="caption">
-          <% if @is_until %>
-            <%= t("results.selector_elements.years_selector.until_html", year: @year) %>
+          <% if @year_param.until? %>
+            <%= t("results.selector_elements.years_selector.until_html", year: @year_param.year) %>
           <% else %>
             <%= t("results.selector_elements.years_selector.until") %>
           <% end %>
@@ -91,10 +92,10 @@
     <%= label_tag(t("results.selector_elements.show_selector.show")) %>
     <div id="show" class="btn-group">
       <div class="btn-group">
-        <label id="persons" class="btn btn-info <%= @is_persons ? " active" : "" %>" data-toggle="dropdown">
+        <label id="persons" class="btn btn-info <%= @ranking_view.persons? ? " active" : "" %>" data-toggle="dropdown">
           <span class="caption">
-            <% if @is_persons %>
-              <%= t("results.selector_elements.show_selector.persons_html", quantity: @show) %>
+            <% if @ranking_view.persons? %>
+              <%= t("results.selector_elements.show_selector.persons_html", quantity: @limit) %>
             <% else %>
               <%= t("results.selector_elements.show_selector.persons") %>
             <% end %>
@@ -102,15 +103,15 @@
         </label>
         <ul class="dropdown-menu show-persons">
           <% @quantities.each do |quantity| %>
-            <li class="persons <%= (@is_persons && quantity.to_s == @show ? " active" : "") %>"><%= link_to quantity.to_s, request.params.merge(show: "#{quantity} persons") %></li>
+            <li class="persons <%= (@ranking_view.persons? && quantity.to_s == @limit ? " active" : "") %>"><%= link_to quantity.to_s, request.params.merge(show: "#{quantity} persons") %></li>
           <% end %>
         </ul>
       </div>
       <div class="btn-group">
-        <label id="results" class="btn btn-info <%= @is_results ? " active" : "" %>" data-toggle="dropdown">
+        <label id="results" class="btn btn-info <%= @ranking_view.results? ? " active" : "" %>" data-toggle="dropdown">
           <span class="caption">
-            <% if @is_results %>
-              <%= t("results.selector_elements.show_selector.results_html", quantity: @show) %>
+            <% if @ranking_view.results? %>
+              <%= t("results.selector_elements.show_selector.results_html", quantity: @limit) %>
             <% else %>
               <%= t("results.selector_elements.show_selector.results") %>
             <% end %>
@@ -118,7 +119,7 @@
         </label>
         <ul class="dropdown-menu show-results">
           <% @quantities.each do |quantity| %>
-            <li class="results <%= (@is_results && quantity.to_s == @show ? " active" : "") %>"><%= link_to quantity.to_s, request.params.merge(show: "#{quantity} results") %></li>
+            <li class="results <%= (@ranking_view.results? && quantity.to_s == @limit ? " active" : "") %>"><%= link_to quantity.to_s, request.params.merge(show: "#{quantity} results") %></li>
           <% end %>
         </ul>
       </div>
@@ -129,10 +130,10 @@
   <div class="form-group">
     <%= label_tag(t("results.selector_elements.show_selector.show")) %>
     <div id="show" class="btn-group">
-      <% @shows.each do |show| %>
+      <% ControllerParams::RecordsShow.all.each do |show| %>
         <%= link_to t("results.selector_elements.show_selector.#{show.tr(" ", "_")}"),
                       request.params.merge(show: show),
-                      class: "btn btn-primary" + (show == params[:show] ? " active" : "") %>
+                      class: "btn btn-primary" + (show == @record_view.kind ? " active" : "") %>
       <% end %>
     </div>
   </div>

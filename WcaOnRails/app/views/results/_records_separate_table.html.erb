@@ -19,9 +19,11 @@
   <tbody>
     <% shown_event = {} %>
     <% rows.each do |row| %>
-      <% result = LightResult.new(row) %>
-      <% value = row["value"] %>
-      <% competition = @competitions_by_id[row["competitionId"]] %>
+      <%# result = LightResult.new(row) %>
+      <% result = row %>
+      <%# value = row["value"] %>
+      <% value = type == "single" ? row.best : row.average %>
+      <% competition = @competitions_by_id[row.competitionId] %>
 
       <tr>
         <% if !shown_event[result.event.id] %>

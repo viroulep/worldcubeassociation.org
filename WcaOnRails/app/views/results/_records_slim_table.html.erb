@@ -18,14 +18,16 @@
     <% rows.each do |single_row, average_row| %>
       <% single = single_row.present? %>
       <% if single %>
-        <% single_result = LightResult.new(single_row) %>
-        <% single_value = single_row["value"] %>
+        <%# single_result = LightResult.new(single_row) %>
+        <% single_result = single_row %>
+        <% single_value = single_row.best %>
       <% end %>
 
       <% average = average_row.present? %>
       <% if average %>
-        <% average_result = LightResult.new(average_row) %>
-        <% average_value = average_row["value"] %>
+        <%# average_result = LightResult.new(average_row) %>
+        <% average_result = average_row %>
+        <% average_value = average_row.average %>
       <% end %>
 
       <tr>
