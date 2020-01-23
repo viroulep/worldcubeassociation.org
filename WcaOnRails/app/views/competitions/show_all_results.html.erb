@@ -9,6 +9,9 @@
         <% rounds_with_results.each do |round, results| %>
           <h3>
             <%= cubing_icon event.id %> <%= "#{event.name} #{round.name}" %>
+            <% if current_user&.can_admin_results? %>
+              <%= link_to(icon("fas", "plus-circle"), new_result_for_comp_path(@competition, event, round)) %>
+            <% end %>
           </h3>
           <%= render "results_table", results: results, hide_event: true, hide_round: true %>
         <% end %>

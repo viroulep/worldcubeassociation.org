@@ -4,8 +4,6 @@ import Modal from 'react-bootstrap/lib/Modal'
 import Button from 'react-bootstrap/lib/Button'
 import Checkbox from 'react-bootstrap/lib/Checkbox'
 
-import events from 'wca/events.js.erb'
-import formats from 'wca/formats.js.erb'
 import { rootRender } from 'edit-events'
 
 import CutoffComponents from './Cutoff'

@@ -88,6 +88,15 @@ Rails.application.routes.draw do
   get 'competitions/edit/time_until_competition' => 'competitions#time_until_competition', as: :time_until_competition
   get 'competitions/:id/edit/clone_competition' => 'competitions#clone_competition', as: :clone_competition
 
+  # /results can be both public (for rankings and records), or used for managing
+  # results records.
+  resources :results, except: [:index, :new], controller: 'admin/results'
+  get 'results/:competition_id/:event_id/:round_type_id/new' => 'admin/results#new', as: :new_result_for_comp
+  post 'results' => 'admin/results#create'
+
+  resources :rounds, only: [:show]
+
+  get 'results', to: redirect('results/rankings/333/single', status: 302)
   get 'results/rankings', to: redirect('results/rankings/333/single', status: 302)
   get 'results/rankings/333mbf/average',
       to: redirect(status: 302) { |params, request| URI.parse(request.original_url).query ? "results/rankings/333mbf/single?#{URI.parse(request.original_url).query}" : "results/rankings/333mbf/single" }

@@ -1,0 +1,12 @@
+<% provide(:title, "Edit a result") %>
+<%= javascript_pack_tag 'edit_results' %>
+
+<%= render layout: 'competitions/nav' do %>
+  <h3>Editing result for <%= link_to "#{@result.person.name} (#{@result.person.wca_id})", person_path(@result.person.wca_id) %></h3>
+  <div id="result-edit-area"></div>
+<% end %>
+<script>
+$(function() {
+  wca.initializeResultForm("<%= @result.id %>", <%= @round&.id || "null" %>);
+});
+</script>

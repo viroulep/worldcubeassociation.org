@@ -1,0 +1,15 @@
+#result-edit-area {
+  .edit-result-attempt {
+    margin-bottom: 10px;
+  }
+  .computed-cell {
+    margin-bottom: 10px;
+    .value {
+      display: inline-block;
+      margin-bottom: 5px;
+    }
+    .marker > select {
+      margin-left: 10px;
+    }
+  }
+}

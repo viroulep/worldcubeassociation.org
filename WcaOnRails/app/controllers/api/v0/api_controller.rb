@@ -180,4 +180,9 @@ class Api::V0::ApiController < ApplicationController
 
     @current_api_user = User.find_by_id(doorkeeper_token&.resource_owner_id)
   end
+
+  private def require_user!
+    raise WcaExceptions::MustLogIn.new if current_api_user.nil? && current_user.nil?
+    current_api_user || current_user
+  end
 end

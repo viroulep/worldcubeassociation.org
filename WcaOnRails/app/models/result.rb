@@ -9,6 +9,12 @@ class Result < ApplicationRecord
   belongs_to :country, foreign_key: :countryId
   validates :country, presence: true
 
+  # NOTE: both nil and "" exist in the database, we may consider cleaning that up.
+  MARKERS = [nil, "", "NR", "ER", "WR", "AfR", "AsR", "NAR", "OcR", "SAR"].freeze
+
+  validates_inclusion_of :regionalSingleRecord, in: MARKERS
+  validates_inclusion_of :regionalAverageRecord, in: MARKERS
+
   def country
     Country.c_find(self.countryId)
   end
@@ -30,8 +36,8 @@ class Result < ApplicationRecord
       attempts: [value1, value2, value3, value4, value5],
       best: best,
       average: average,
-      regional_single_record: regionalSingleRecord,
-      regional_average_record: regionalAverageRecord,
+      regional_single_record: regionalSingleRecord || "",
+      regional_average_record: regionalAverageRecord || "",
     }
   end
 end
