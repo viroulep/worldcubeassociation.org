@@ -36,8 +36,14 @@ export const loadableComponent = (WrappedComponent, urlHelper) => {
       this.loadState();
     }
 
+    componentDidUpdate(prevProps) {
+      if (this.props.id != prevProps.id) {
+        this.loadState();
+      }
+    }
+
     render() {
-      return <WrappedComponent {...this.props} loadedState={this.state.loadedState} />;
+      return <WrappedComponent {...this.props} loadedState={this.state.loadedState || this.props.loadedState} />;
     }
   };
 };

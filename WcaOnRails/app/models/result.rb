@@ -25,19 +25,30 @@ class Result < ApplicationRecord
   scope :winners, -> { final.succeeded.where(pos: 1).joins(:event).order("Events.rank") }
 
   def serializable_hash(options = nil)
-    {
+    res_hash = {
       id: id,
       competition_id: competitionId,
       pos: pos,
       event_id: eventId,
       round_type_id: roundTypeId,
       format_id: formatId,
-      wca_id: personId,
       attempts: [value1, value2, value3, value4, value5],
       best: best,
       average: average,
       regional_single_record: regionalSingleRecord || "",
       regional_average_record: regionalAverageRecord || "",
+      wca_id: "",
+      person_name: "",
+      country_iso2: "",
     }
+    # There is an edge case where we're building an empty result, which doesn't have
+    # a person!
+    if person
+      res_hash.merge!(
+        wca_id: personId,
+        person_name: personName,
+        country_iso2: country.iso2,
+      )
+    end
   end
 end

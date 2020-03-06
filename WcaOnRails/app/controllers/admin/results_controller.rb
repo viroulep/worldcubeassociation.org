@@ -45,6 +45,7 @@ module Admin
         result = Result.find(params.require(:id))
         if result.update_attributes(result_params)
           validator = ResultsValidators::PositionsValidator.new(apply_fixes: true)
+          # TODO: check perf on WC
           validator.validate(competition_ids: [result.competitionId])
           format.json {
             render json: {
@@ -89,6 +90,11 @@ module Admin
     private def result_params
       params.require(:result).permit(:value1, :value2, :value3, :value4, :value5,
                                      :best, :average,
+                                     # TODO: I think these are overridable per-result
+                                     # because of our concept of multiple person
+                                     # attached to a single WCA ID (eg: different
+                                     # country or name over time)
+                                     :personId, :personName, :countryId,
                                      :regionalSingleRecord, :regionalAverageRecord)
     end
   end

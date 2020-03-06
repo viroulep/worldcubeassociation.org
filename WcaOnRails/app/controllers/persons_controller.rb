@@ -27,14 +27,22 @@ class PersonsController < ApplicationController
   end
 
   def show
-    @person = Person.current.includes(:user, :ranksSingle, :ranksAverage, :competitions).find_by_wca_id!(params[:id])
-    @previous_persons = Person.where(wca_id: params[:id]).where.not(subId: 1).order(:subId)
-    @ranks_single = @person.ranksSingle
-    @ranks_average = @person.ranksAverage
-    @medals = @person.medals
-    @records = @person.records
-    @results = @person.results.includes(:competition, :event, :format, :round_type).order("Events.rank, Competitions.start_date DESC, Competitions.id, RoundTypes.rank DESC")
-    @championship_podiums = @person.championship_podiums
-    params[:event] ||= @results.first.event.id
+    respond_to do |format|
+      format.html do
+        @person = Person.current.includes(:user, :ranksSingle, :ranksAverage, :competitions).find_by_wca_id!(params[:id])
+        @previous_persons = Person.where(wca_id: params[:id]).where.not(subId: 1).order(:subId)
+        @ranks_single = @person.ranksSingle
+        @ranks_average = @person.ranksAverage
+        @medals = @person.medals
+        @records = @person.records
+        @results = @person.results.includes(:competition, :event, :format, :round_type).order("Events.rank, Competitions.start_date DESC, Competitions.id, RoundTypes.rank DESC")
+        @championship_podiums = @person.championship_podiums
+        params[:event] ||= @results.first.event.id
+      end
+      format.json do
+        @person = Person.current.find_by_wca_id!(params[:id])
+        return render json: @person
+      end
+    end
   end
 end

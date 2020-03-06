@@ -1,26 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import AttemptField from '../AttemptField/AttemptField';
-import MarkerField from '../MarkerField/MarkerField';
-import { setAt, times, trimTrailingZeros } from 'wca/utils';
-import {
-  formatAttemptResult,
-} from 'wca/attempts';
+import AttemptList from './AttemptList';
+import RoundInfo from './RoundInfo'
+import PersonData from './PersonData'
+import { times, trimTrailingZeros } from 'wca/utils';
 import formats from 'wca/formats.js.erb';
 import { best, average } from 'wca/stats';
 import { savableComponent } from 'requests/savable';
 import { resultResourceUrl } from 'requests/routes.js.erb';
 import { ErrorList, InfoList } from 'requests/Lists';
+import countries from 'wca/countries.js.erb'
 import DeleteButton from 'requests/DeleteButton';
 import cn from 'classnames';
 import _ from 'lodash';
 
 const ResultForm = savableComponent(({
   id,
+  roundId,
   originalResult,
   saveState,
 }) => {
   const [savedResult, setSavedResult] = useState(originalResult);
+  const [personData, setPersonData] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [errors, setErrors] = useState([]);
   const [infos, setInfos] = useState([]);
@@ -31,28 +32,34 @@ const ResultForm = savableComponent(({
   const eventId = originalResult.event_id;
   const solveCount = originalResult.format_id ?
     formats.byId[originalResult.format_id].expectedSolveCount : 0;
-  const computeAverage =
-    [3, 5].includes(solveCount) && eventId !== '333mbf';
 
   useEffect(() => {
     setAttempts(
       times(solveCount, index =>
         (originalResult.attempts && originalResult.attempts[index]) || 0)
     );
+    setPersonData({
+      wca_id: originalResult.wca_id,
+      person_name: originalResult.person_name,
+      country_iso2: originalResult.country_iso2,
+    });
     setMarkerBest(originalResult.regional_single_record || "");
     setMarkerAvg(originalResult.regional_average_record || "");
   }, [originalResult]);
 
-
-
   const hasChanges = () => {
     return !_.isEqual([
         // Original result always has 5 attempts
-        savedResult.attempts.slice(0, solveCount),
+        trimTrailingZeros(savedResult.attempts),
         savedResult.regional_single_record,
-        savedResult.regional_average_record
+        savedResult.regional_average_record,
+        {
+          wca_id: savedResult.wca_id,
+          person_name: savedResult.person_name,
+          country_iso2: savedResult.country_iso2,
+        }
       ],
-      [attempts, markerBest, markerAvg]);
+      [attempts, markerBest, markerAvg, personData]);
   };
 
   const toResult = () => {
@@ -61,6 +68,9 @@ const ResultForm = savableComponent(({
       regionalAverageRecord: markerAvg,
       best: best(attempts),
       average: average(attempts, eventId, solveCount),
+      personName: personData.person_name,
+      personId: personData.wca_id,
+      countryId: countries.find(e => e.iso2 == personData.country_iso2).name,
     };
     attempts.map((a, index) => res[`value${index+1}`] = a);
     return { result: res };
@@ -79,87 +89,58 @@ const ResultForm = savableComponent(({
         attempts: attempts,
         regional_single_record: markerBest,
         regional_average_record: markerAvg,
+        ...personData,
       });
       setInfos(response.infos);
     } else {
       setErrors(response.errors);
     }
   };
-
   return (
-    <div>
-      <div className="row">
-        {attempts.map((attempt, index) => (
-          <div className="col-xs-12 edit-result-attempt" key={index}>
-            <AttemptField
-              eventId={eventId}
-              label={`Attempt ${index + 1}`}
-              initialValue={attempt}
-              savedValue={savedResult.attempts[index]}
-              onValue={value => setAttempts(setAt(attempts, index, value)) }
-            />
-          </div>
-        ))}
-        <div className="col-xs-6 computed-cell">
-          <div>
-            <div className="value">
-              <b>Best</b>: {formatAttemptResult(best(attempts), eventId)}
-              {' '}(was:{' '}
-              {formatAttemptResult(best(savedResult.attempts), eventId)}
-              {savedResult.regional_single_record})
-            </div>
-            <div className="marker">
-              Marker:
-              <MarkerField onChange={setMarkerBest} marker={markerBest} />
-            </div>
-          </div>
+    <div className="row">
+      <div className="col-xs-12 col-md-6">
+        <RoundInfo id={roundId} originalResult={originalResult} />
+        <PersonData
+          loadedState={personData}
+          updateData={setPersonData}
+          savedResult={savedResult}
+        />
+      </div>
+      <div className="col-xs-12 col-md-6">
+        <div className="row">
+          <AttemptList
+            attempts={attempts}
+            setAttempts={setAttempts}
+            eventId={eventId}
+            savedResult={savedResult}
+            markerAvg={markerAvg}
+            setMarkerAvg={setMarkerAvg}
+            markerBest={markerBest}
+            setMarkerBest={setMarkerBest}
+            solveCount={solveCount}
+          />
         </div>
-        <div className="col-xs-6 computed-cell">
-          {computeAverage && (
-            <div>
-              <div className="value">
-                <b>Average</b>:{' '}
-                {formatAttemptResult(
-                  average(attempts, eventId, solveCount),
-                  eventId,
-                  true
-                )}
-                {' '}(was:{' '}
-                {formatAttemptResult(
-                  average(savedResult.attempts, eventId, solveCount),
-                  eventId,
-                  true
-                )}
-                {savedResult.regional_average_record})
-              </div>
-              <div className="marker">
-                Marker:
-                <MarkerField onChange={setMarkerAvg} marker={markerAvg} />
-              </div>
-            </div>
-          )}
-        </div>
-        {errors.length > 0 && (
-          <div className="col-xs-12">
-            <ErrorList items={errors} />
-          </div>
-        )}
-        {infos.length > 0 && (
-          <div className="col-xs-12">
-            <InfoList items={infos} />
-          </div>
-        )}
+      </div>
+      {errors.length > 0 && (
         <div className="col-xs-12">
-          <button
-            className={cn("btn", "btn-primary", { saving })}
-            disabled={!hasChanges()}
-            style={{marginRight: "15px"}}
-            onClick={saveRecord}
-          >
-            Save
-          </button>
-          <DeleteButton url={resultResourceUrl(id)} />
+          <ErrorList items={errors} />
         </div>
+      )}
+      {infos.length > 0 && (
+        <div className="col-xs-12">
+          <InfoList items={infos} />
+        </div>
+      )}
+      <div className="col-xs-12">
+        <button
+          className={cn("btn", "btn-primary", { saving })}
+          disabled={!hasChanges()}
+          style={{marginRight: "15px"}}
+          onClick={saveRecord}
+        >
+          Save
+        </button>
+        <DeleteButton url={resultResourceUrl(id)} />
       </div>
     </div>
   );

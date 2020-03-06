@@ -1,9 +1,13 @@
 export const resultResourceUrl = id => {
   return id ?
-    `<%= URI.decode(Rails.application.routes.url_helpers.result_path("${id}")) %>`
+    `<%= URI.decode(Rails.application.routes.url_helpers.result_path("${id}", format: :json)) %>`
     : "<%= Rails.application.routes.url_helpers.results_path %>";
 };
 
 export const roundResourceUrl = id => {
-  return `<%= URI.decode(Rails.application.routes.url_helpers.round_path("${id}")) %>`;
+  return `<%= URI.decode(Rails.application.routes.url_helpers.round_path("${id}", format: :json)) %>`;
+};
+
+export const personResourceUrl = id => {
+  return `<%= URI.decode(Rails.application.routes.url_helpers.person_path("${id}", format: :json)) %>`;
 };
