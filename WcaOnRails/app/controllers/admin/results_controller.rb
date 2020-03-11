@@ -88,6 +88,7 @@ module Admin
     end
 
     private def result_params
+      # FIXME: for new results, merge this with competitionId/roundtypeid/formatid/eventId
       params.require(:result).permit(:value1, :value2, :value3, :value4, :value5,
                                      :best, :average,
                                      # TODO: I think these are overridable per-result

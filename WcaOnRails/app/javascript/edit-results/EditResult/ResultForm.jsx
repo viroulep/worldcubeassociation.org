@@ -64,6 +64,8 @@ const ResultForm = savableComponent(({
 
   const toResult = () => {
     let res = {
+      competitionId: savedResult.competition_id,
+      // TODO: the same with format and roundtypeid (because new result)
       regionalSingleRecord: markerBest,
       regionalAverageRecord: markerAvg,
       best: best(attempts),
