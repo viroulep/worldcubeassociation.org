@@ -3,6 +3,7 @@ import _ from 'lodash';
 import {
   Button, Panel, Row, Col,
 } from 'react-bootstrap';
+import { Icon } from 'semantic-ui-react';
 import rootRender from '..';
 import { timezoneData } from '../../wca/timezoneData.js.erb';
 import countries from '../../wca/countries.js.erb';
@@ -110,7 +111,7 @@ export default class EditVenue extends React.Component {
                 </Col>
                 <Col xs={3}>
                   <Button onClick={removeVenueAction} bsStyle="danger" className="pull-right">
-                    <i className="fas fa-trash" />
+                    <Icon name="trash" />
                   </Button>
                 </Col>
               </Row>
