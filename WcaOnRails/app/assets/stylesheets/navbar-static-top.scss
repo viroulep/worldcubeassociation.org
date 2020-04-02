@@ -78,8 +78,12 @@
     }
   }
 
-  .navbar-nav > li > a.top-nav:hover {
-    background: #f0f0f0;
+  .navbar-nav > li > a {
+    padding-left: 10px;
+    padding-right: 10px;
+    &.top-nav:hover {
+      background: #f0f0f0;
+    }
   }
 
   .navbar-toggle {

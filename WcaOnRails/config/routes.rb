@@ -119,7 +119,7 @@ Rails.application.routes.draw do
   get 'panel/seniors' => 'panel#seniors'
   resources :notifications, only: [:index]
 
-  root 'posts#index'
+  root 'posts#homepage'
   resources :posts
   get 'rss' => 'posts#rss'
 

@@ -25,18 +25,19 @@ import autosize from 'autosize';
 // we want to use that dependency) the components used site-wide, and import
 // other components on a need-per-pack basis.
 // Webpacker will then do the maths and chunk that appropriately.
-import '../stylesheets/semantic/components/site.css';
-import '../stylesheets/semantic/components/site.js';
-import '../stylesheets/semantic/components/container.css';
-import '../stylesheets/semantic/components/header.css';
-import '../stylesheets/semantic/components/list.css';
-import '../stylesheets/semantic/components/item.css';
-import '../stylesheets/semantic/components/image.css';
-import '../stylesheets/semantic/components/icon.css';
-import '../stylesheets/semantic/components/grid.css';
-import '../stylesheets/semantic/components/reset.css';
-import '../stylesheets/semantic/components/segment.css';
-import '../stylesheets/semantic/components/button.css';
+import '../stylesheets/semantic/components/site.min.css';
+import '../stylesheets/semantic/components/site.min.js';
+import '../stylesheets/semantic/components/container.min.css';
+import '../stylesheets/semantic/components/header.min.css';
+import '../stylesheets/semantic/components/list.min.css';
+import '../stylesheets/semantic/components/item.min.css';
+import '../stylesheets/semantic/components/image.min.css';
+import '../stylesheets/semantic/components/icon.min.css';
+import '../stylesheets/semantic/components/grid.min.css';
+import '../stylesheets/semantic/components/reset.min.css';
+import '../stylesheets/semantic/components/segment.min.css';
+import '../stylesheets/semantic/components/button.min.css';
+import '../stylesheets/semantic/components/divider.min.css';
 import '../stylesheets/override.scss';
 import '../stylesheets/homepage.scss';
 

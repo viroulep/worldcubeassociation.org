@@ -1,0 +1,38 @@
+#homepage {
+  // NOTE: this is because on the rest of the website we have a margin between
+  // the navigation and the actual content.
+  margin-top: -15px;
+  #cover-homepage {
+    background: url('../images/cover.jpg') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+    min-height: 500px;
+    width: 100%;
+    padding: 1em 0em;
+    .ui.header {
+      font-family: Montserrat, 'Helvetica Neue',Arial,Helvetica,sans-serif;
+    }
+    .ui.huge.header#welcome {
+      font-size: 3em;
+      text-transform: uppercase;
+    }
+  }
+
+  .ui.inverted {
+    &.raised {
+      box-shadow: none;
+    }
+  }
+
+  .ui.vertical.stripe {
+    padding: 5em 1em;
+    background-color: #f4f4f2;
+  }
+
+  .ui.container.cover-segments {
+    margin-top: 2em;
+  }
+}

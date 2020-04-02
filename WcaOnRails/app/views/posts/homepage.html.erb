@@ -1,0 +1,111 @@
+<div id="homepage">
+  <div class="ui container" id="cover-homepage">
+    <div class="ui fluid container">
+      <h1 class="ui huge header inverted" id="welcome">
+        <div>Welcome to the</div>
+        <div>World Cube Association</div>
+      </h1>
+    </div>
+
+    <div class="ui container cover-segments">
+      <div class="ui three column stackable grid">
+        <div class="column">
+          <div class="ui raised center aligned segment">
+            <h3 class="ui header">About us</h3>
+            <p>
+            Lorem ipsum dolor sit amet, epicuri recteque mel in.
+            </p>
+
+            <button class="ui button primary">Learn more</button>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="ui raised center aligned segment">
+            <h3 class="ui header text-center">Competitions</h3>
+            <p>
+            Lorem ipsum dolor sit amet, epicuri recteque mel in.
+            </p>
+
+            <button class="ui button primary">Learn more</button>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="ui raised center aligned segment">
+            <h3 class="ui header text-center">Records</h3>
+            <p>
+            Lorem ipsum dolor sit amet, epicuri recteque mel in.
+            </p>
+
+            <button class="ui button primary ">Learn more</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui vertical stripe segment">
+    <div class="ui equal width stackable internally centered grid">
+      <div class="row">
+        <div class="column">
+          <h2 class="ui header">Latest news</h2>
+          <div class="ui divider"></div>
+          <%= render("post_content", post: @latest_post) if @latest_post %>
+        </div>
+        <div class="column">
+          <h2 class="ui header">Announcements</h2>
+          <div class="ui divider"></div>
+          <div class="ui bulleted list">
+            <div class="item">New WGHT Leader chosen <a href="">Read more</a></div>
+            <div class="item">
+              <a href="">Feliks Zemdegs</a> wins <a href="">Cojedes Cubing 2018</a>, in San Carlos, Cojedes,
+              Venezuela
+            </div>
+            <div class="item">
+              <a href="">City Open 2019 on February 16, 2019 in Louisville, Kentucky, United States
+            </div>
+            <div class="item">
+              <a href="">Yangjiang Open 2019</a> on January 19, 2019 in Yangjiang, Guangdong, China
+            </div>
+            <div class="item">
+              <a href="">Bernardo Torres</a> wins <a href="">Cojedes Cubing 2018</a>, in San Carlos, Cojedes,
+              Venezuela
+            </div>
+            <div class="item">
+              <a href="">Derby City Open 2019</a> on February 16, 2019 in Louisville, Kentucky, United States
+            </div>
+            <div class="item">
+              <a href="">Yangjiang Open 2019</a> on January 19, 2019 in Yangjiang, Guangdong, China
+            </div>
+          </div>
+          <button class="ui button primary center">Learn more</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui two column grid">
+    <div class="column blue">
+      <div class="ui raised center aligned segment blue inverted">
+        <h2 class="ui header inverted">Learn</h2>
+        <p>
+        Do you want to learn how to solve twisty puzzles? Do you want to learn more about our
+        competitions?
+        </p>
+        <button class="ui blue button">Find helpful tutorials and ressources</button>
+      </div>
+    </div>
+
+    <div class="column yellow">
+      <div class="ui raised center aligned segment yellow inverted">
+        <h2 class="ui header">Support the WCA</h2>
+        <p>
+        Some smart text about non-profit and way to donate.
+        </p>
+        <button class="ui yellow button">
+          Learn more about how you can support the WCA
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -61,7 +61,7 @@
         </li>
         <li class="dropdown <%= Set['results', 'persons', 'media'].include?(params[:controller]) ? 'active' : '' %>">
           <a href="" class="dropdown-toggle top-nav" data-toggle="dropdown" data-hover="dropdown">
-            <%= ui_icon('list-ol') %>
+            <%= ui_icon('list ol') %>
             <span class="hidden-sm"><%= t '.results' %></span>
             <span class="caret"></span>
           </a>
@@ -112,7 +112,7 @@
         <li>
           <a href="https://forum.worldcubeassociation.org/" target="_blank" class="hide-new-window-icon">
             <%= ui_icon('comments') %>
-            <span class="hidden-sm"><%= t '.forum' %></span>
+            <span class="visible-lg-inline visible-xs-inline"><%= t '.forum' %></span>
           </a>
         </li>
       </ul>

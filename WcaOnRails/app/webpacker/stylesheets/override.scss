@@ -16,4 +16,23 @@ body, html {
       width: auto;
     }
   }
+
+  footer {
+    // Our main content spreads a bit too close from the footer.
+    margin-top: 10px;
+    .ui.segment {
+      .column.footer-links {
+        .ui.list {
+          .item:first-child {
+            padding-left: 0px;
+          }
+        }
+        a {
+          color: black;
+        }
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
 }

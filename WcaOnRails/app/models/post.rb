@@ -5,6 +5,8 @@ class Post < ApplicationRecord
   has_many :post_tags, autosave: true, dependent: :destroy
   include Taggable
 
+  scope :visible, -> { where(world_readable: true) }
+
   validates :title, presence: true, uniqueness: true
   validates :body, presence: true
   validates :slug, presence: true, uniqueness: true
