@@ -4,20 +4,33 @@ class PostsController < ApplicationController
   include TagsHelper
   before_action :authenticate_user!, except: [:homepage, :index, :rss, :show]
   before_action -> { redirect_to_root_unless_user(:can_create_posts?) }, except: [:homepage, :index, :rss, :show]
+  POSTS_PER_PAGE = 10
 
   def index
-    tag = params[:tag]
-    if tag
-      @posts = Post.joins(:post_tags).where('post_tags.tag = ?', tag)
-    else
-      @posts = Post.where(show_on_homepage: true)
-    end
-    @posts = @posts.where(world_readable: true).order(sticky: :desc, created_at: :desc).includes(:author).page(params[:page])
     respond_to do |format|
       format.json do
-        render json: @posts
+        tag = params[:tag]
+        if tag
+          @posts = Post.joins(:post_tags).where('post_tags.tag = ?', tag)
+        else
+          @posts = Post.where(show_on_homepage: true)
+        end
+        @posts = @posts
+                 .visible
+                 .order(sticky: :desc, created_at: :desc)
+                 .includes(:author)
+                 .page(params[:page])
+                 .per(POSTS_PER_PAGE)
+        render json: {
+          totalPages: @posts.total_pages,
+          posts: @posts.as_json(
+            can_manage: current_user&.can_create_posts?,
+            remove_body: true,
+          ),
+        }
       end
       format.html do
+        @current_page = (params[:page] || 1).to_i
         render :index
       end
     end

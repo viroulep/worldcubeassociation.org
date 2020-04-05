@@ -91,13 +91,13 @@ window.wca.createCompetitionsMapLeaflet = (elementId, center = [0, 0], iframeTri
         map.invalidateSize();
       });
       map.invalidateSize();
-    }
+    };
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       // Call on next tick
       setTimeout(listener, 1);
     } else {
-      document.addEventListener("DOMContentLoaded", listener);
+      document.addEventListener('DOMContentLoaded', listener);
     }
   }
   return map;

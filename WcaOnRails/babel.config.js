@@ -38,6 +38,15 @@ module.exports = function(api) {
       "@babel/preset-react",
     ].filter(Boolean),
     plugins: [
+      // This is little help to include individual components from Semantic UI React!
+      ['module-resolver', {
+        root: ['app/webpacker'],
+        alias: {
+          'semantic': ([, name]) => `semantic-ui-react/dist/es${name}`,
+          'semantic-css': ([, name]) => `stylesheets/semantic/components${name}.min.css`,
+        }
+      }],
+      // This cherry-picks needed lodash function from a generic 'import _ from lodash'.
       'lodash',
       'babel-plugin-macros',
       '@babel/plugin-syntax-dynamic-import',

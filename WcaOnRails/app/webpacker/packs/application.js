@@ -7,16 +7,12 @@
 // To reference this file, add <%= javascript_pack_tag 'application' %> to the appropriate
 // layout file, like app/views/layouts/application.html.erb
 
-require("@rails/ujs").start()
-require("jquery")
-
-import 'flag-icon-css/css/flag-icon.css';
 import '../javascript/image-preview';
 import '../javascript/polyfills';
 import '../javascript/incidents-log';
 import autosize from 'autosize';
+import formattedTextForDate from '../javascript/wca/utils';
 
-// FIXME: refactor?
 // NOTE: We *need* to import only the components we want to use.
 // The full Semantic/Fomantic UI css is 1.6 MB minified at the time of writing.
 // There is no way it's reasonable to add that to our frontpage, given we use
@@ -25,23 +21,31 @@ import autosize from 'autosize';
 // we want to use that dependency) the components used site-wide, and import
 // other components on a need-per-pack basis.
 // Webpacker will then do the maths and chunk that appropriately.
-import '../stylesheets/semantic/components/site.min.css';
-import '../stylesheets/semantic/components/site.min.js';
-import '../stylesheets/semantic/components/container.min.css';
-import '../stylesheets/semantic/components/header.min.css';
-import '../stylesheets/semantic/components/list.min.css';
-import '../stylesheets/semantic/components/item.min.css';
-import '../stylesheets/semantic/components/image.min.css';
-import '../stylesheets/semantic/components/icon.min.css';
-import '../stylesheets/semantic/components/grid.min.css';
-import '../stylesheets/semantic/components/reset.min.css';
-import '../stylesheets/semantic/components/segment.min.css';
-import '../stylesheets/semantic/components/button.min.css';
-import '../stylesheets/semantic/components/divider.min.css';
-import '../stylesheets/override.scss';
-import '../stylesheets/homepage.scss';
+// FIXME: we could replicate semantic-ui-react's tree, and each leaf would import
+// the react component + the css (done through module resolver)
+// Currently in the posts widget, this is done:
+// import Button from 'semantic/elements/Button';
+// import 'semantic-css/button';
+// In the future, we could just "import 'semantic/Button';", which would resolve
+// to our own alias, importing the appropriate react component and loading the style.
+
+import { attachComponentToElem } from '../javascript/wca/react-utils';
+
+require('@rails/ujs').start();
+require('jquery');
+
+// Build up the window.wca environment, which we use to store our components.
+window.wca = window.wca || {};
+window.wca.components = {};
+window.wca.attachComponentToElem = attachComponentToElem;
 
 // Setting up autosize
 $(() => {
   autosize($('textarea:not(.no-autosize)'));
+  // Setup wca-local-time users
+  $('.wca-local-time').each(function init() {
+    const data = $(this).data();
+    const { utcTime, locale } = data;
+    $(this).text(formattedTextForDate(utcTime, locale));
+  });
 });

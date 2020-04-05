@@ -1,3 +1,4 @@
+<% add_to_packs("homepage", "posts_widget") %>
 <div id="homepage">
   <div class="ui container" id="cover-homepage">
     <div class="ui fluid container">
@@ -16,7 +17,7 @@
             Lorem ipsum dolor sit amet, epicuri recteque mel in.
             </p>
 
-            <button class="ui button primary">Learn more</button>
+            <%= link_to("Learn more", about_path, class: "ui button primary") %>
           </div>
         </div>
 
@@ -27,7 +28,7 @@
             Lorem ipsum dolor sit amet, epicuri recteque mel in.
             </p>
 
-            <button class="ui button primary">Learn more</button>
+            <%= link_to("Learn more", competitions_path, class: "ui button primary") %>
           </div>
         </div>
 
@@ -38,7 +39,7 @@
             Lorem ipsum dolor sit amet, epicuri recteque mel in.
             </p>
 
-            <button class="ui button primary ">Learn more</button>
+            <%= link_to("Learn more", records_path, class: "ui button primary") %>
           </div>
         </div>
       </div>
@@ -55,30 +56,10 @@
         <div class="column">
           <h2 class="ui header">Announcements</h2>
           <div class="ui divider"></div>
-          <div class="ui bulleted list">
-            <div class="item">New WGHT Leader chosen <a href="">Read more</a></div>
-            <div class="item">
-              <a href="">Feliks Zemdegs</a> wins <a href="">Cojedes Cubing 2018</a>, in San Carlos, Cojedes,
-              Venezuela
-            </div>
-            <div class="item">
-              <a href="">City Open 2019 on February 16, 2019 in Louisville, Kentucky, United States
-            </div>
-            <div class="item">
-              <a href="">Yangjiang Open 2019</a> on January 19, 2019 in Yangjiang, Guangdong, China
-            </div>
-            <div class="item">
-              <a href="">Bernardo Torres</a> wins <a href="">Cojedes Cubing 2018</a>, in San Carlos, Cojedes,
-              Venezuela
-            </div>
-            <div class="item">
-              <a href="">Derby City Open 2019</a> on February 16, 2019 in Louisville, Kentucky, United States
-            </div>
-            <div class="item">
-              <a href="">Yangjiang Open 2019</a> on January 19, 2019 in Yangjiang, Guangdong, China
-            </div>
-          </div>
-          <button class="ui button primary center">Learn more</button>
+          <%= render_react_component("PostsWidget", id: "posts_widget", options: {
+            titleOnly: true,
+          }) %>
+          <%= link_to "See all announcements", posts_path, class: "ui blue button" %>
         </div>
       </div>
     </div>

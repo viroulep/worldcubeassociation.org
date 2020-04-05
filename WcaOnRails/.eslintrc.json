@@ -24,5 +24,10 @@
         "react",
         "jquery"
     ],
-    "rules": {}
+    "rules": {
+        "react/prop-types": 0,
+        "import/no-unresolved": [2, {
+            "ignore": ["semantic-css/", "semantic/"]
+        }]
+    }
 }

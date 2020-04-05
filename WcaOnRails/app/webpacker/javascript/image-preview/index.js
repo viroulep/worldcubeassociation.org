@@ -9,6 +9,7 @@ $(() => {
         $input[0].files[0],
         (img) => {
           if (img.type === 'error') {
+            /* eslint-disable-next-line */
             console.error(img);
           } else {
             $container.empty().append(img);

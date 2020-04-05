@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import events from './events.js.erb';
-import fetchWithAuthenticityToken from './fetchWithAuthenticityToken';
+import { fetchWithAuthenticityToken } from '../requests/fetchWithAuthenticityToken';
 
 function promiseSaveWcif(competitionId, data) {
   const url = `/api/v0/competitions/${competitionId}/wcif`;
@@ -31,6 +31,7 @@ export function saveWcif(competitionId, data, onSuccess, onFailure) {
     })
     .catch((e) => {
       onFailure();
+      /* eslint-disable-next-line */
       alert(`Something went wrong while saving.\n${e.message}`);
     });
 }

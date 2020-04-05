@@ -5,7 +5,7 @@ import EasyMDE from 'easymde';
 // import "easymde/src/css/easymde.css";
 import 'easymde/dist/easymde.min.css';
 
-import fetchWithAuthenticityToken from '../wca/fetchWithAuthenticityToken';
+import { fetchWithAuthenticityToken } from '../requests/fetchWithAuthenticityToken';
 import './style.scss';
 
 $(() => {
@@ -16,6 +16,7 @@ $(() => {
     const endPoint = cm.getCursor('end');
     const somethingSelected = cm.somethingSelected();
 
+    /* eslint-disable-next-line */
     const text = (somethingSelected ? cm.getSelection() : prompt(promptText));
 
     if (!text) {

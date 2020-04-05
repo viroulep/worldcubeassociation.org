@@ -342,24 +342,6 @@ function onPage(controllersWithActions, fun) {
   });
 }
 
-$(function() {
-  $('.wca-local-time').each(function() {
-    var data = $(this).data();
-    var date = new Date(data.utcTime);
-    var formatted;
-    if(typeof(Intl) !== "undefined") {
-      formatted = new Intl.DateTimeFormat(data.locale, {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short'
-      }).format(date);
-    } else {
-      // Workaround for https://github.com/thewca/worldcubeassociation.org/issues/3228.
-      // We can remove this once we consider Safari 9 to be "dead enough".
-      formatted = date.toString();
-    }
-    $(this).text(formatted);
-  });
-});
-
 // Handler for locale changes.
 $(function() {
   $('#locale-selector').on('click', 'a', function(e) {
