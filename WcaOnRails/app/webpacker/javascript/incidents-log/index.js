@@ -1,18 +1,20 @@
+import { getUrlParams, setUrlParams } from '../wca/utils';
+
 let incidentsBootstrapTable = null;
 let $incidentsTagsInput = null;
-let $incidentsSearchInput = null;
+let incidentsSearchInputSel = null;
 
-function updateUrlParams($searchInput, $tagsInput) {
+function updateUrlParams(searchSel, $tagsInput) {
   // Update params in the url.
   const params = {
-    search: $searchInput.val(),
+    search: $(searchSel).val(),
     tags: $tagsInput.val(),
   };
-  $.setUrlParams(params);
+  setUrlParams(params);
 }
 
 function loadUrlParams() {
-  const params = $.getUrlParams();
+  const params = getUrlParams();
   return {
     tags: params.tags || '',
     search: params.search || '',
@@ -48,23 +50,19 @@ function customIncidentsSearch(text) {
   });
 }
 
-function activatePopover() {
-  $('[data-toggle="popover"]').popover();
-}
-
-window.wca.initIncidentsLogTable = function init(options, $table, $searchInput, $tagsInput) {
+window.wca.initIncidentsLogTable = function init(options, $table, searchInputSel, $tagsInput) {
   const selectizeOptions = options;
   $incidentsTagsInput = $tagsInput;
-  $incidentsSearchInput = $searchInput;
+  incidentsSearchInputSel = searchInputSel;
   $table.bootstrapTable('refreshOptions', { customSearch: customIncidentsSearch });
 
   $table.on('search.bs.table', () => {
     // Yep, when it's filtered we need to reactivate popovers :(
-    activatePopover();
-    updateUrlParams($searchInput, $tagsInput);
+    window.wca.reloadPopover();
+    updateUrlParams(incidentsSearchInputSel, $tagsInput);
   });
   $table.on('page-change.bs.table', () => {
-    activatePopover();
+    window.wca.reloadPopover();
   });
 
   // It's a search filter input, so there is no point to allow user to create tags
@@ -74,8 +72,8 @@ window.wca.initIncidentsLogTable = function init(options, $table, $searchInput, 
     if (incidentsBootstrapTable) {
       incidentsBootstrapTable.searchText = ' ';
     }
-    $table.bootstrapTable('resetSearch', $searchInput.val());
-    updateUrlParams($searchInput, $tagsInput);
+    $table.bootstrapTable('resetSearch', $(incidentsSearchInputSel).val());
+    updateUrlParams(incidentsSearchInputSel, $tagsInput);
   };
   selectizeOptions.maxOptions = 5;
   const params = loadUrlParams();
@@ -86,7 +84,7 @@ window.wca.initIncidentsLogTable = function init(options, $table, $searchInput, 
 
 window.wca.searchIncidentsForTag = function search(e, tag) {
   e.preventDefault();
-  $incidentsSearchInput.val('');
+  $(incidentsSearchInputSel).val('');
   const { selectize } = $incidentsTagsInput[0];
   selectize.clear();
   selectize.addItem(tag);

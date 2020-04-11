@@ -11,7 +11,11 @@ import '../javascript/image-preview';
 import '../javascript/polyfills';
 import '../javascript/incidents-log';
 import autosize from 'autosize';
-import formattedTextForDate from '../javascript/wca/utils';
+import {
+  getUrlParams,
+  setUrlParams,
+  formattedTextForDate,
+} from '../javascript/wca/utils';
 
 // NOTE: We *need* to import only the components we want to use.
 // The full Semantic/Fomantic UI css is 1.6 MB minified at the time of writing.
@@ -49,3 +53,7 @@ $(() => {
     $(this).text(formattedTextForDate(utcTime, locale));
   });
 });
+
+// Export some helpers
+window.wca.getUrlParams = getUrlParams;
+window.wca.setUrlParams = setUrlParams;

@@ -1,4 +1,4 @@
-const formattedTextForDate = (utcTime, locale) => {
+export const formattedTextForDate = (utcTime, locale) => {
   const date = new Date(utcTime);
   let formatted;
   if (typeof (Intl) !== 'undefined') {
@@ -13,4 +13,26 @@ const formattedTextForDate = (utcTime, locale) => {
   return formatted;
 };
 
-export default formattedTextForDate;
+export const getUrlParams = () => {
+  /* eslint-disable-next-line */
+  const query = location.search.substr(1);
+  const result = {};
+  if (query) {
+    query.split('&').forEach((part) => {
+      const [key, val] = decodeURIComponent(part).split('=');
+      result[key] = val;
+    });
+  }
+  return result;
+};
+
+export const setUrlParams = (params) => {
+  const allParams = {
+    ...getUrlParams(),
+    ...params,
+  };
+  const paramsAsStr = Object.keys(allParams).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(allParams[k])}`)
+    .join('&');
+  /* eslint-disable-next-line */
+  history.replaceState(null, null, `?${paramsAsStr}`);
+};

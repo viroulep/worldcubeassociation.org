@@ -181,6 +181,10 @@ window.wca.datetimepicker = function(){
   });
 };
 
+window.wca.reloadPopover = function() {
+  $('[data-toggle="popover"]').popover();
+};
+
 $(function() {
   $('.dropdown-toggle').dropdownHover();
   $('form.are-you-sure').areYouSure();
@@ -203,7 +207,7 @@ $(function() {
   });
 
   $('[data-toggle="tooltip"]').tooltip();
-  $('[data-toggle="popover"]').popover();
+  window.wca.reloadPopover();
   $('input.wca-autocomplete').wcaAutocomplete();
 
   var $tablesToFloatHeaders = $('table.floatThead');

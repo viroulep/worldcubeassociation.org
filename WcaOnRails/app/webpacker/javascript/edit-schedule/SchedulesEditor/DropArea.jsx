@@ -4,9 +4,9 @@ export const dropAreaSelector = '#drop-event-area';
 
 export const DropArea = () => (
   <div id="drop-event-area" className="bg-danger text-danger text-center">
-    <i className="fas fa-trash fa-lg pull-left" />
+    <i className="icon trash pull-left" />
     Drop an event here to remove it from the schedule.
-    <i className="fas fa-trash fa-lg pull-right" />
+    <i className="icon trash pull-right" />
   </div>
 );
 

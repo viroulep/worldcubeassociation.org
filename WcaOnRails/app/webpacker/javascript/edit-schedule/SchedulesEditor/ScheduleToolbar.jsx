@@ -95,7 +95,7 @@ export class ScheduleToolbar extends React.Component {
           overlay={<CalendarHelp />}
           placement="bottom"
         >
-          <Button><i className="fas fa-question-circle" /></Button>
+          <Button><i className="icon question circle" /></Button>
         </OverlayTrigger>
         <OverlayTrigger
           trigger="click"
@@ -109,12 +109,12 @@ export class ScheduleToolbar extends React.Component {
 )}
         >
           <OverlayTrigger overlay={tooltipSettings} placement="top">
-            <Button><i className="fas fa-cog" /></Button>
+            <Button><i className="icon cog" /></Button>
           </OverlayTrigger>
         </OverlayTrigger>
         <OverlayTrigger overlay={<TooltipKeyboard enabled={keyboardEnabled} />} placement="top">
           <Button onClick={handleKeyboardChange} active={keyboardEnabled}>
-            <i className="fas fa-keyboard" />
+            <i className="icon keyboard" />
           </Button>
         </OverlayTrigger>
       </ButtonToolbar>
@@ -128,7 +128,7 @@ const CalendarHelp = ({ ...props }) => (
   <Popover id="calendar-help-popover" title="Keyboard shortcuts help" {...props}>
     <dl className="row">
       <dt className="col-xs-4">
-        <i className="fas fa-keyboard" />
+        <i className="icon keyboard" />
         {' '}
         or
         <br />

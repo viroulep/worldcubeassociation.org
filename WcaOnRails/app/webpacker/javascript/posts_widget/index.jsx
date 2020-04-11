@@ -19,7 +19,7 @@ import { postsUrl } from '../requests/routes.js.erb';
 import { registerComponent } from '../wca/react-utils';
 import Loading from '../requests/Loading';
 import Errored from '../requests/Errored';
-import formattedTextForDate from '../wca/utils';
+import { formattedTextForDate } from '../wca/utils';
 import './index.scss';
 
 const PostTitlesList = ({

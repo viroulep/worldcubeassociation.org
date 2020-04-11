@@ -7,8 +7,6 @@ environment.plugins.append('Provide', new webpack.ProvidePlugin({
   jQuery: 'jquery/src/jquery',
 }));
 
-// https://medium.com/@poshakajay/heres-how-i-reduced-my-bundle-size-by-90-2e14c8a11c11
-//https://www.codementor.io/@drewpowers/high-performance-webpack-config-for-front-end-delivery-90sqic1qa#3-dynamic-imports-for-lazy-loaded-modules
 environment.loaders.append('erb', erb)
 environment.splitChunks((config) => {
   return Object.assign({}, config, {

@@ -28,13 +28,13 @@ export class ContextualMenu extends React.Component {
       <ul id="schedule-menu" className="dropdown-menu hide-element" role="menu">
         <li className="edit-option">
           <a href="#" role="menuitem" onClick={actionsHandlers.editEvent}>
-            <i className="fas fa-pencil-alt" />
+            <i className="icon pencil" />
             <span>Edit</span>
           </a>
         </li>
         <li>
           <a href="#" role="menuitem" onClick={actionsHandlers.removeEvent}>
-            <i className="fas fa-trash text-danger" />
+            <i className="icon trash text-danger" />
             <span className="text-danger">Remove</span>
           </a>
         </li>
