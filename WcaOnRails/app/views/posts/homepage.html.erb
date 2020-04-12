@@ -1,5 +1,10 @@
-<% add_to_packs("homepage", "posts_widget") %>
+<% add_to_packs("homepage", "posts_widget", "search_widget") %>
 <div id="homepage">
+  <div class="ui container">
+    <%= render_react_component("SearchWidget", options: {
+      titleOnly: true,
+    }) %>
+  </div>
   <div class="ui container" id="cover-homepage">
     <div class="ui fluid container">
       <h1 class="ui huge header inverted" id="welcome">
