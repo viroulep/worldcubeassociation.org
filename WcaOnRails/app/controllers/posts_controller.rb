@@ -16,7 +16,6 @@ class PostsController < ApplicationController
           @posts = Post.where(show_on_homepage: true)
         end
         @posts = @posts
-                 .visible
                  .order(sticky: :desc, created_at: :desc)
                  .includes(:author)
                  .page(params[:page])
@@ -37,7 +36,7 @@ class PostsController < ApplicationController
   end
 
   def homepage
-    @latest_post = Post.visible.order(sticky: :desc, created_at: :desc).first
+    @latest_post = Post.order(sticky: :desc, created_at: :desc).first
   end
 
   def rss

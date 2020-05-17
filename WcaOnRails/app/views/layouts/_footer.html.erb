@@ -1,38 +1,25 @@
-<footer class="footer">
-  <div class="ui vertical segment inverted blue secondary">
-    <div class="ui container">
-      <div class="ui stackable divided grid two column">
-          <div class="two wide column">
-            <a href="<%= root_path %>">
-              <%= image_tag "wca_logo.svg", class: "ui centered tiny image" %>
-            </a>
-          </div>
-          <div class="column footer-links">
-            <div class="ui horizontal divided big list">
-              <div class="item">
-                <%= link_to "About", about_path %>
-              </div>
-              <div class="item">
-                <%= link_to "FAQ", faq_path %>
-              </div>
-              <div class="item">
-                <%= link_to "Contact", contact_website_path %>
-              </div>
-              <div class="item">
-                <a href="https://github.com/thewca/worldcubeassociation.org" target="_blank" class="hide-new-window-icon">
-                  <%= ui_icon("github") %> GitHub
-                </a>
-              </div>
-            </div>
-            <div class="ui horizontal small list">
-              <div class="item">
-                <%= link_to "Privacy", privacy_path %>
-              </div>
-              <div class="item">
-                <%= link_to "Disclaimer", disclaimer_path %>
-              </div>
-            </div>
-          </div>
+<footer class="footer ui vertical segment">
+  <div class="ui container footer-links">
+    <div class="ui horizontal divided list">
+      <div class="item">
+        <%= link_to "About", about_path %>
+      </div>
+      <div class="item">
+        <%= link_to "FAQ", faq_path %>
+      </div>
+      <div class="item">
+        <%= link_to "Contact", contact_website_path %>
+      </div>
+      <div class="item">
+        <a href="https://github.com/thewca/worldcubeassociation.org" target="_blank" class="hide-new-window-icon">
+          <%= ui_icon("github") %> GitHub
+        </a>
+      </div>
+      <div class="item">
+        <%= link_to "Privacy", privacy_path %>
+      </div>
+      <div class="item">
+        <%= link_to "Disclaimer", disclaimer_path %>
       </div>
     </div>
   </div>

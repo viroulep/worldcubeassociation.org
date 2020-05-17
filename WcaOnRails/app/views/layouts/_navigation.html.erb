@@ -1,5 +1,5 @@
 <div class="navbar navbar-default navbar-static-top" role="navigation">
-  <div class="container">
+  <div class="ui container">
     <div class="navbar-brand">
       <a href="<%= root_path %>"><%= image_tag "wca_logo.svg" %></a>
       <span>
@@ -14,14 +14,12 @@
         <%= link_to(ui_icon("youtube"), "https://www.youtube.com/channel/UC5OUMUnS8PvY1RvtB1pQZ0g", target: "_blank", class: "hide-new-window-icon") %>
       </span>
     </div>
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-    </div>
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
     <div class="navbar-collapse collapse disabled">
       <ul class="nav navbar-nav">
         <li class="dropdown <%= Set['static_pages', 'posts'].include?(params[:controller]) ? 'active' : '' %>">

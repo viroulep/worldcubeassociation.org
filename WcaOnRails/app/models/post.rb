@@ -65,7 +65,7 @@ class Post < ApplicationRecord
       json[:body] = body
     end
     if options[:can_manage]
-      json[:edit_url] = edit_path
+      json[:edit_url] = Rails.application.routes.url_helpers.edit_post_path(slug)
     end
 
     json
