@@ -72,7 +72,6 @@ export default class EditVenue extends React.Component {
       }
     };
 
-
     // Instead of giving *all* TZInfo, use uniq-fied rails "meaningful" subset
     // We'll add the "country_zones" to that, because some of our competitions
     // use TZs not included in this subset.

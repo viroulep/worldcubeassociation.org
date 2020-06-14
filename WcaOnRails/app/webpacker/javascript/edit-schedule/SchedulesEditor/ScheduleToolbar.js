@@ -172,7 +172,6 @@ const TooltipKeyboard = ({ enabled, ...props }) => (
   </Tooltip>
 );
 
-
 const CalendarSettingsOption = ({ selected, optionName, handlePropChange }) => {
   const optionProps = calendarOptionsInfo[optionName];
   return (
