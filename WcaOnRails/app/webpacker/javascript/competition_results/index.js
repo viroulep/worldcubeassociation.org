@@ -31,9 +31,11 @@ const RoundResultsTable = ({ round, eventName, eventId }) => (
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {round.results.map((result) => (
+        {round.results.map((result, index, results) => (
           <Table.Row key={result.id}>
-            <Table.Cell>{result.pos}</Table.Cell>
+            <Table.Cell className={getPosTiedClass(result.pos, results, index)}>
+              {result.pos}
+            </Table.Cell>
             <Table.Cell>
               <a href={personUrl(result.wca_id)}>{`${result.name}`}</a>
             </Table.Cell>
@@ -63,6 +65,10 @@ const getRecordClass = (record) => {
     }
   }
   return '';
+};
+
+const getPosTiedClass = (pos, results, index) => {
+  return index > 0 && results[index - 1].pos === pos ? 'text-muted' : '';
 };
 
 const EventResults = ({ competitionId, eventId }) => {
