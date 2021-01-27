@@ -22,8 +22,10 @@ const RoundResultsTable = ({ round, eventName, eventId }) => (
           <Table.HeaderCell width={4}>
             {I18n.t('competitions.results_table.name')}
           </Table.HeaderCell>
-          <Table.HeaderCell width={2}>{I18n.t('common.best')}</Table.HeaderCell>
-          <Table.HeaderCell width={2}>{I18n.t('common.average')}</Table.HeaderCell>
+          <Table.HeaderCell>{I18n.t('common.best')}</Table.HeaderCell>
+          <Table.HeaderCell></Table.HeaderCell>
+          <Table.HeaderCell>{I18n.t('common.average')}</Table.HeaderCell>
+          <Table.HeaderCell></Table.HeaderCell>
           <Table.HeaderCell>{I18n.t('common.user.citizen_of')}</Table.HeaderCell>
           <Table.HeaderCell>{I18n.t('common.solves')}</Table.HeaderCell>
         </Table.Row>
@@ -35,8 +37,14 @@ const RoundResultsTable = ({ round, eventName, eventId }) => (
             <Table.Cell>
               <a href={personUrl(result.wca_id)}>{`${result.name}`}</a>
             </Table.Cell>
-            <Table.Cell>{formatAttemptResult(result.best, eventId)}</Table.Cell>
-            <Table.Cell>{formatAttemptResult(result.average, eventId, true)}</Table.Cell>
+            <Table.Cell className={getRecordClass(result.regional_single_record)}>
+              {formatAttemptResult(result.best, eventId)}
+            </Table.Cell>
+            <Table.Cell>{result.regional_single_record || ''}</Table.Cell>
+            <Table.Cell className={getRecordClass(result.regional_average_record)}>
+              {formatAttemptResult(result.average, eventId)}
+            </Table.Cell>
+            <Table.Cell>{result.regional_average_record || ''}</Table.Cell>
             <Table.Cell><CountryFlag iso2={result.country_iso2} /></Table.Cell>
             <Table.Cell className="table-cell-solves">{result.attempts.map((a) => formatAttemptResult(a, eventId)).join(' ')}</Table.Cell>
           </Table.Row>
@@ -45,6 +53,17 @@ const RoundResultsTable = ({ round, eventName, eventId }) => (
     </Table>
   </>
 );
+
+const getRecordClass = (record) => {
+  if (record) {
+    if (record == 'WR' || record == 'NR') {
+      return record;
+    } else {
+      return 'CR';
+    }
+  }
+  return '';
+};
 
 const EventResults = ({ competitionId, eventId }) => {
   const { loading, error, data } = useLoadedData(
