@@ -64,7 +64,7 @@ export function formatAttemptResult(attemptResult, eventId) {
   if (attemptResult === SKIPPED_VALUE) return '';
   if (attemptResult === DNF_VALUE) return 'DNF';
   if (attemptResult === DNS_VALUE) return 'DNS';
-  if (eventId === '333mbf') return formatMbldAttemptResult(attemptResult);
+  if (eventId === '333mbf' || eventId === '333mbo') return formatMbldAttemptResult(attemptResult);
   if (eventId === '333fm') return formatFmAttemptResult(attemptResult);
   return centisecondsToClockFormat(attemptResult);
 }
