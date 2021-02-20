@@ -4,7 +4,10 @@ import useLoadedData from '../hooks/useLoadedData';
 import { registerComponent } from '../wca/react-utils';
 import Loading from '../requests/Loading';
 import Errored from '../requests/Errored';
-import { formatAttemptResult } from '../wca-live/attempts';
+import {
+  formatAttemptResult,
+  formatAttemptsForResult,
+} from '../wca-live/attempts';
 import CountryFlag from '../wca/CountryFlag';
 import './index.scss';
 import EventNavigation from '../event_navigation';
@@ -48,7 +51,9 @@ const RoundResultsTable = ({ round, eventName, eventId }) => (
             </Table.Cell>
             <Table.Cell>{result.regional_average_record || ''}</Table.Cell>
             <Table.Cell><CountryFlag iso2={result.country_iso2} /></Table.Cell>
-            <Table.Cell className="table-cell-solves">{result.attempts.map((a) => formatAttemptResult(a, eventId)).join(' ')}</Table.Cell>
+            <Table.Cell className="table-cell-solves">
+              {formatAttemptsForResult(result, eventId)}
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>

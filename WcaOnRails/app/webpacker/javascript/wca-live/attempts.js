@@ -68,3 +68,13 @@ export function formatAttemptResult(attemptResult, eventId) {
   if (eventId === '333fm') return formatFmAttemptResult(attemptResult);
   return centisecondsToClockFormat(attemptResult);
 }
+
+export function formatAttemptsForResult(result, eventId) {
+  // Only highlight best and worst if the number of unskipped attempts is 5.
+  const highlightBestAndWorst = result.attempts.filter((a) => a !== 0).length === 5;
+  return result.attempts.map((attempt, index) => {
+    const attemptStr = formatAttemptResult(attempt, eventId);
+    return highlightBestAndWorst && (result.best_index === index || result.worst_index === index)
+      ? `(${attemptStr})` : attemptStr;
+  }).join(' ');
+}
