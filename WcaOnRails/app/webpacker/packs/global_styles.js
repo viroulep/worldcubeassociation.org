@@ -6,10 +6,12 @@ import 'semantic-css/card';
 import 'semantic-css/container';
 import 'semantic-css/divider';
 import 'semantic-css/dropdown';
+import 'semantic-css/form';
 import 'semantic-css/grid';
 import 'semantic-css/header';
 import 'semantic-css/icon';
 import 'semantic-css/image';
+import 'semantic-css/input';
 import 'semantic-css/item';
 import 'semantic-css/label';
 import 'semantic-css/list';
@@ -23,6 +25,8 @@ import 'semantic-css/site';
 import 'semantic-css/table';
 import 'semantic-css/transition';
 // NOTE: This is the js, wouldn't go fine through our module-resolver!
+import '../stylesheets/semantic/components/dropdown.min';
 import '../stylesheets/semantic/components/site.min';
+import '../stylesheets/semantic/components/form.min';
 
 import '../stylesheets/override.scss';

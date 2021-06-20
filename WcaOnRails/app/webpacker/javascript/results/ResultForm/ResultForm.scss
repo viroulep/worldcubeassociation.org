@@ -1,0 +1,12 @@
+.result-form {
+  margin-top: 1em;
+  input[readonly] {
+    opacity: 0.7;
+  }
+  .attempts-column {
+    .row {
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+    }
+  }
+}
