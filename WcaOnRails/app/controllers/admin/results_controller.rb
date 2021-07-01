@@ -4,19 +4,8 @@ module Admin
   class ResultsController < AdminController
     # NOTE: authentication is performed by admin controller
 
-    ASSOCIATIONS = {
-      competition: {
-        competition_events: {
-          # This weird association include is courtesy of time_limit.to_s
-          rounds: :competition_event,
-        },
-        events: [],
-      },
-    }.freeze
-
-    # FIXME: actually implement this
     def new
-      @competition = Competition.includes(ASSOCIATIONS[:competition]).find(params[:competition_id])
+      @competition = Competition.find(params[:competition_id])
       @round = Round.find(params[:round_id])
       # Create some basic attributes for that empty result.
       # Using Result.new wouldn't work here: we have no idea what the country
@@ -89,19 +78,15 @@ module Admin
     end
 
     def destroy
-      # TODO: fix/implement this
       result = Result.find(params.require(:id))
-      @competition = result.competition
+      competition_id = result.competitionId
       result.destroy!
+
       # Create a results validator to fix positions if needed
-      @results_validator = ResultsValidators::CompetitionsResultsValidator.new(
-        check_real_results: true,
-        validators: [ResultsValidators::PositionsValidator],
-        apply_fixes: true,
-      )
-      @results_validator.validate(@competition.id)
-      # and render the check results view
-      render "admin/check_results"
+      validator = ResultsValidators::PositionsValidator.new(apply_fixes: true)
+      validator.validate(competition_ids: [competition_id])
+
+      render json: {}
     end
 
     private def result_params

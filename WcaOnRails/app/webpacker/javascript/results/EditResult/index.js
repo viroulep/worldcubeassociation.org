@@ -28,7 +28,7 @@ const EditResult = ({
           {!loading && (
             <>
               <h3>
-                Result saved in the database
+                Result previously saved in the database
               </h3>
               <ShowSingleResult result={data} />
             </>

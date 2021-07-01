@@ -6,11 +6,14 @@ import _ from 'lodash';
 import AttemptsForm from './AttemptsForm';
 import PersonForm from './PersonForm';
 import RoundForm from './RoundForm';
+import DeleteResultButton from './DeleteResultButton';
 import SaveMessage from './SaveMessage';
+import AfterActionMessage from './AfterActionMessage';
 import formats from '../../wca/formats.js.erb';
 import useSaveData from '../../hooks/useSaveData';
 import { average, best } from '../../wca-live/attempts';
 import { resultUrl } from '../../requests/routes.js.erb';
+import { fetchJsonOrError } from '../../requests/fetchWithAuthenticityToken';
 import countries from '../../wca/countries.js.erb';
 import './ResultForm.scss';
 
@@ -56,7 +59,7 @@ const dataToResult = (round, person, attemptsData) => {
 };
 
 const ResultForm = ({
-  result, saveAction, saving, response,
+  result, saveAction, deleteAction, saving, response,
 }) => {
   const solveCount = result.format_id
     ? formats.byId[result.format_id].expectedSolveCount : 0;
@@ -110,38 +113,44 @@ const ResultForm = ({
       >
         Save
       </Button>
+      {result.id && (
+        <DeleteResultButton deleteAction={() => deleteAction(result)} />
+      )}
     </div>
   );
 };
 
 // This is a simple wrapper to be able to manage request-specific states,
 // and to be able to hide the form upon creation.
-const ResultFormWrapper = ({ result, sync, AfterSaveElement }) => {
+const ResultFormWrapper = ({ result, sync }) => {
   const { id } = result;
   const newResult = id === undefined;
 
   // Saving and user-feedback states.
   const { save, saving } = useSaveData({ method: newResult ? 'POST' : 'PATCH' });
   const [response, setResponse] = useState({});
+
   // This is used to track if we did save something.
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saved, setSaved] = useState(undefined);
+
+  const [deleted, setDeleted] = useState(undefined);
 
   const successAction = useCallback((data, responseJson) => {
     // Upon a successful request, set the response and the data sent.
     // Note that it doesn't mean something was written to the db, the response
     // may contain validation errors or information.
-    setResponse({
-      ...responseJson,
-      sentResult: {
+    setResponse(responseJson);
+
+    // No 'errors' means something good happened, sync the result and set
+    // what was saved.
+    if (responseJson.errors === undefined) {
+      sync();
+      setSaved({
         ...data.result,
         ...data.round,
-      },
-    });
-    if (response.errors === undefined) {
-      sync();
-      setSaveSuccess(true);
+      });
     }
-  }, [setResponse, setSaveSuccess, sync]);
+  }, [setResponse, setSaved, sync]);
 
   const onError = useCallback((err) => {
     setResponse({
@@ -150,8 +159,8 @@ const ResultFormWrapper = ({ result, sync, AfterSaveElement }) => {
         err.message,
       ],
     });
-    setSaveSuccess(false);
-  }, [setResponse, setSaveSuccess]);
+    setSaved(undefined);
+  }, [setResponse, setSaved]);
 
   const saveAction = useCallback((data) => {
     const url = newResult ? resultUrl('') : resultUrl(id);
@@ -164,15 +173,41 @@ const ResultFormWrapper = ({ result, sync, AfterSaveElement }) => {
     );
   }, [save, newResult, successAction, onError]);
 
-  return AfterSaveElement && saveSuccess ? (
-    <AfterSaveElement response={response} />
-  ) : (
-    <ResultForm
-      result={result}
-      saveAction={saveAction}
-      saving={saving}
-      response={response}
-    />
+  const deleteAction = useCallback((deletedResult) => {
+    fetchJsonOrError(resultUrl(deletedResult.id), {
+      method: 'DELETE',
+    }).then(() => setDeleted(deletedResult))
+      .catch((err) => setResponse({ errors: [err.message] }));
+  }, [id]);
+
+  const newlyCreated = id === undefined && saved;
+
+  return (
+    <>
+      {newlyCreated && (
+      <AfterActionMessage
+        wcaId={saved.personId}
+        competitionId={saved.competitionId}
+        message="result for that person was created!"
+      />
+      )}
+      {deleted && (
+      <AfterActionMessage
+        wcaId={deleted.wca_id}
+        competitionId={deleted.competition_id}
+        message="result for that person was deleted!"
+      />
+      )}
+      {!newlyCreated && !deleted && (
+      <ResultForm
+        result={result}
+        saveAction={saveAction}
+        deleteAction={deleteAction}
+        saving={saving}
+        response={response}
+      />
+      )}
+    </>
   );
 };
 
