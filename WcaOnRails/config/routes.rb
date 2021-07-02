@@ -111,7 +111,9 @@ Rails.application.routes.draw do
   get "media/validate" => 'media#validate', as: :validate_media
   resources :media, only: [:index, :new, :create, :edit, :update, :destroy]
 
+  get 'persons/new_id' => 'admin/persons#generate_ids'
   resources :persons, only: [:index, :show]
+  post 'persons' => 'admin/persons#create'
 
   resources :polls, only: [:edit, :new, :vote, :create, :update, :index, :destroy]
   get 'polls/:id/vote' => 'votes#vote', as: 'polls_vote'
@@ -190,6 +192,7 @@ Rails.application.routes.draw do
   post '/admin/merge_people' => 'admin#do_merge_people'
   get '/admin/edit_person' => 'admin#edit_person'
   patch '/admin/update_person' => 'admin#update_person'
+  delete '/admin/destroy_person' => 'admin/persons#destroy'
   get '/admin/person_data' => 'admin#person_data'
   get '/admin/compute_auxiliary_data' => 'admin#compute_auxiliary_data'
   get '/admin/do_compute_auxiliary_data' => 'admin#do_compute_auxiliary_data'

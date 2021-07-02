@@ -6,6 +6,7 @@ import _ from 'lodash';
 import AttemptsForm from './AttemptsForm';
 import PersonForm from './PersonForm';
 import RoundForm from './RoundForm';
+import NewPersonModal from './NewPersonModal';
 import DeleteResultButton from './DeleteResultButton';
 import SaveMessage from './SaveMessage';
 import AfterActionMessage from './AfterActionMessage';
@@ -41,7 +42,7 @@ const dataToResult = (round, person, attemptsData) => {
   const res = {
     personId: person.wcaId,
     personName: person.name,
-    countryId: country ? country.name : undefined,
+    countryId: country ? country.id : undefined,
     best: best(attemptsData.attempts),
     average: average(attemptsData.attempts, round.eventId, attemptsData.attempts.length),
     regionalAverageRecord: attemptsData.markerAvg,
@@ -59,23 +60,24 @@ const dataToResult = (round, person, attemptsData) => {
 };
 
 const ResultForm = ({
-  result, saveAction, deleteAction, saving, response,
+  result, save, saving, onCreate, onUpdate, onDelete,
 }) => {
+  const { id } = result;
   const solveCount = result.format_id
     ? formats.byId[result.format_id].expectedSolveCount : 0;
   const computeAverage = [3, 5].includes(solveCount) && result.event_id !== '333mbf';
 
-  // Person-related state
+  // Person-related state.
   const [personData, setPersonData] = useState(personDataFromResult(result));
 
-  // Immutable round-related data
+  // Immutable round-related data.
   // FIXME: now that we have a 'Round' object for every round in the database
   // (I think), we may consider showing its data here, which would make it
   // slightly easier to select the appropriate round when creating a result,
   // if at some point we want to make it selectable.
   const [roundData, setRoundData] = useState(roundDataFromResult(result));
 
-  // Attempts-related state
+  // Attempts-related state.
   const [attemptsState, setAttemptsState] = useState(attemptsDataFromResult(solveCount, result));
 
   // Populate the original states whenever the original result changes.
@@ -84,6 +86,56 @@ const ResultForm = ({
     setRoundData(roundDataFromResult(result));
     setPersonData(personDataFromResult(result));
   }, [result]);
+
+  // Use response to store errors and messages.
+  const [response, setResponse] = useState({});
+
+  const onSuccess = useCallback((data, responseJson) => {
+    // First of all, set the errors/messages.
+    setResponse(responseJson);
+    if (responseJson.errors === undefined) {
+      // Notify the parent(s) based on creation/update.
+      if (id === undefined) {
+        onCreate(data);
+      } else {
+        onUpdate(data);
+      }
+    }
+  }, [id, setResponse, onCreate, onUpdate]);
+
+  const onError = useCallback((err) => {
+    // 'onError' is called only if the request fails, which shouldn't happen
+    // whatever the user input is. If this does happen, ask them to report to us!
+    setResponse({
+      errors: [
+        'The request to the server failed. This is definitely unexpected, you may consider contacting the WST with the error below!',
+        err.toString(),
+      ],
+    });
+  }, [setResponse]);
+
+  const saveAction = useCallback((data) => {
+    const url = id === undefined ? resultUrl('') : resultUrl(id);
+    const onSuccessAction = (responseJson) => onSuccess(data.result, responseJson);
+    save(
+      url,
+      data,
+      onSuccessAction,
+      onError,
+    );
+  }, [save, id, onSuccess, onError]);
+
+  const deleteAction = useCallback(() => {
+    fetchJsonOrError(resultUrl(result.id), {
+      method: 'DELETE',
+    }).then(() => onDelete(result))
+      .catch(onError);
+  }, [result, onDelete, setResponse]);
+
+  const onPersonCreate = useCallback((data) => {
+    setPersonData(personDataFromResult(data));
+    setResponse({});
+  }, [setResponse, setPersonData]);
 
   return (
     <div className="result-form">
@@ -94,6 +146,11 @@ const ResultForm = ({
       <h3>
         Person data
       </h3>
+      <NewPersonModal
+        trigger={<Button positive compact size="small">Create new person</Button>}
+        onPersonCreate={onPersonCreate}
+        competitionId={roundData.competitionId}
+      />
       <PersonForm personData={personData} setPersonData={setPersonData} />
       <h3>
         Attempts
@@ -114,7 +171,7 @@ const ResultForm = ({
         Save
       </Button>
       {result.id && (
-        <DeleteResultButton deleteAction={() => deleteAction(result)} />
+        <DeleteResultButton deleteAction={deleteAction} />
       )}
     </div>
   );
@@ -124,90 +181,43 @@ const ResultForm = ({
 // and to be able to hide the form upon creation.
 const ResultFormWrapper = ({ result, sync }) => {
   const { id } = result;
-  const newResult = id === undefined;
 
   // Saving and user-feedback states.
-  const { save, saving } = useSaveData({ method: newResult ? 'POST' : 'PATCH' });
-  const [response, setResponse] = useState({});
+  // If 'id' is undefined, then we're creating a new result and it's a POST,
+  // otherwise it's a PATCH.
+  const { save, saving } = useSaveData({ method: id === undefined ? 'POST' : 'PATCH' });
 
   // This is used to track if we did save something.
-  const [saved, setSaved] = useState(undefined);
-
+  const [created, setCreated] = useState(undefined);
   const [deleted, setDeleted] = useState(undefined);
 
-  const successAction = useCallback((data, responseJson) => {
-    // Upon a successful request, set the response and the data sent.
-    // Note that it doesn't mean something was written to the db, the response
-    // may contain validation errors or information.
-    setResponse(responseJson);
-
-    // No 'errors' means something good happened, sync the result and set
-    // what was saved.
-    if (responseJson.errors === undefined) {
-      sync();
-      setSaved({
-        ...data.result,
-        ...data.round,
-      });
-    }
-  }, [setResponse, setSaved, sync]);
-
-  const onError = useCallback((err) => {
-    setResponse({
-      errors: [
-        'The request to the server failed. This is definitely unexpected, you may consider contacting the WST with the error below!',
-        err.message,
-      ],
-    });
-    setSaved(undefined);
-  }, [setResponse, setSaved]);
-
-  const saveAction = useCallback((data) => {
-    const url = newResult ? resultUrl('') : resultUrl(id);
-    const onSuccessAction = (responseJson) => successAction(data, responseJson);
-    save(
-      url,
-      data,
-      onSuccessAction,
-      onError,
-    );
-  }, [save, newResult, successAction, onError]);
-
-  const deleteAction = useCallback((deletedResult) => {
-    fetchJsonOrError(resultUrl(deletedResult.id), {
-      method: 'DELETE',
-    }).then(() => setDeleted(deletedResult))
-      .catch((err) => setResponse({ errors: [err.message] }));
-  }, [id]);
-
-  const newlyCreated = id === undefined && saved;
-
-  return (
-    <>
-      {newlyCreated && (
+  if (created) {
+    return (
       <AfterActionMessage
-        wcaId={saved.personId}
-        competitionId={saved.competitionId}
+        wcaId={created.personId}
+        competitionId={result.competition_id}
         message="result for that person was created!"
       />
-      )}
-      {deleted && (
+    );
+  }
+  if (deleted) {
+    return (
       <AfterActionMessage
         wcaId={deleted.wca_id}
-        competitionId={deleted.competition_id}
+        competitionId={result.competition_id}
         message="result for that person was deleted!"
       />
-      )}
-      {!newlyCreated && !deleted && (
-      <ResultForm
-        result={result}
-        saveAction={saveAction}
-        deleteAction={deleteAction}
-        saving={saving}
-        response={response}
-      />
-      )}
-    </>
+    );
+  }
+  return (
+    <ResultForm
+      result={result}
+      save={save}
+      saving={saving}
+      onCreate={setCreated}
+      onUpdate={sync}
+      onDelete={setDeleted}
+    />
   );
 };
 

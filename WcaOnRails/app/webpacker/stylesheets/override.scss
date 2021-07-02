@@ -23,6 +23,16 @@ body, html {
     opacity: 1 !important;
   }
 
+  // FIXME: yet another bootstrap conflict override :(
+  .ui.modal {
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    overflow: visible;
+    outline: none;
+  }
+
   .navbar-brand {
     .icon {
       margin: 0;
