@@ -1,4 +1,4 @@
-<% add_to_packs("homepage", "posts_widget") %>
+<% add_to_packs("homepage", "posts_widget", "user_ids_input") %>
 <div id="homepage">
   <div class="ui fluid container" id="cover-homepage">
     <div class="ui fluid container">
@@ -24,6 +24,10 @@
         <% end %>
       </div>
     </div>
+  </div>
+  <div class="ui container">
+    <%= render_react_component("UserIdsInput", id: "titi", options: { multiple: true, inputId: "delegate_id", inputName: "delegate_id" }) %>
+    <%= render_react_component("UserIdsInput", id: "toto", options: { multiple: false, inputId: "user_id", inputName: "user_id" }) %>
   </div>
   <div id="content-homepage">
     <div class="ui vertical stripe segment news-content">

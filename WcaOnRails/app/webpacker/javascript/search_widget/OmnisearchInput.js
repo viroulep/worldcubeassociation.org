@@ -61,6 +61,12 @@ const OmnisearchInput = ({
   goToItemOnSelect,
   placeholder,
   removeNoResultsMessage,
+  // NOTE: we actually always pass 'multiple' to the Dropdown below, because
+  // the 'renderLabel' method is available only if 'multiple' is true.
+  // We handle single value input by manually ensuring that there is only
+  // one element in the 'selected' array!
+  multiple,
+  onSelect,
 }) => {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
@@ -70,6 +76,12 @@ const OmnisearchInput = ({
   const [selected, setSelected] = useState([]);
 
   const handleChange = useCallback((e, { value, options }) => {
+    let newValue = value;
+    // if 'multiple' is false, manually ensure that there is at most one entry
+    // in 'newValue'.
+    if (!multiple && newValue.length > 1) {
+      newValue = [newValue.pop()];
+    }
     setSearch('');
     // Here we have "value" which contains the ids of the elements selected,
     // "oldSelected" which contains the previously selected elements,
@@ -81,7 +93,7 @@ const OmnisearchInput = ({
     setSelected((oldSelected) => {
       const newSelected = [
         ...new Set(oldSelected.concat(options)),
-      ].filter(({ id }) => value.includes(id));
+      ].filter(({ id }) => newValue.includes(id));
       // Redirect user to actual page if needed, and do not change the state.
       if (goToItemOnSelect && newSelected.length > 0) {
         window.location.href = newSelected[0].item.url;
@@ -89,7 +101,7 @@ const OmnisearchInput = ({
       }
       return newSelected;
     });
-  }, [setSelected, setSearch, goToItemOnSelect]);
+  }, [setSelected, setSearch, goToItemOnSelect, multiple]);
 
   useEffect(() => {
     // Do nothing if search string is empty: we're just loading the page
@@ -109,7 +121,15 @@ const OmnisearchInput = ({
     }
   }, [debouncedSearch, url]);
 
-  const options = [...selected, ...results];
+  // Use the callback on change, if any.
+  useEffect(() => {
+    if (onSelect) {
+      onSelect(selected);
+    }
+  }, [onSelect, selected]);
+
+  // Make sure 'options' contains all the necessary data, but only once!
+  const options = [...new Set(selected.concat(results))];
 
   // If we go to item on select, we want to give the user the option to go to
   // the search page.
