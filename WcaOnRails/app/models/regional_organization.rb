@@ -31,12 +31,20 @@ class RegionalOrganization < ApplicationRecord
     start_date.nil?
   end
 
+  def logo_url
+    if logo.attached?
+      Rails.application.routes.url_helpers.rails_representation_url(logo.variant(resize: "500x300").processed)
+    else
+      nil
+    end
+  end
+
+  DEFAULT_SERIALIZE_OPTIONS = {
+    only: ["name", "website", "country"],
+    methods: ["logo_url"],
+  }.freeze
+
   def serializable_hash(options = nil)
-    {
-      name: name,
-      website: website,
-      country: country,
-      logo: logo.attached? ? Rails.application.routes.url_helpers.rails_representation_url(logo.variant(resize: "500x300").processed) : nil,
-    }
+    super(DEFAULT_SERIALIZE_OPTIONS.merge(options || {}))
   end
 end
