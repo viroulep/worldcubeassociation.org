@@ -50,7 +50,7 @@ onPage('persons#index', function() {
 
 onPage('persons#show', function() {
   function scrollToTabs() {
-    var top = $('.nav.nav-tabs').offset().top;
+    var top = $('.nav.nav-pills').offset().top;
     $('html, body').animate({ scrollTop: top - 5 });
   }
 

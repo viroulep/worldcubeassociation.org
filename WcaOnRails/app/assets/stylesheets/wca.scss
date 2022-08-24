@@ -317,7 +317,7 @@ table.wca-results {
 // Add a border to .tab-pane to line up nicely with corresponding .nav-tabs.
 // Note, we only want to do this on screensizes where the nav buttons have not
 // yet collapsed.
-.tab-pane {
+.nav-tabs .tab-pane {
   margin-bottom: 10px;
 
   @media (min-width: $screen-sm) {

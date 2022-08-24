@@ -113,7 +113,9 @@ Rails.application.routes.draw do
   resources :media, only: [:index, :new, :create, :edit, :update, :destroy]
 
   get 'persons/new_id' => 'admin/persons#generate_ids'
-  resources :persons, only: [:index, :show]
+  resources :persons, only: [:index, :show] do
+    get 'competitions' => 'persons#competitions'
+  end
   post 'persons' => 'admin/persons#create'
 
   resources :polls, only: [:edit, :new, :vote, :create, :update, :index, :destroy]
