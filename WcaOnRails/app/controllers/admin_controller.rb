@@ -187,7 +187,6 @@ class AdminController < ApplicationController
   end
 
   def compute_auxiliary_data
-    @reason_not_to_run = ComputeAuxiliaryData.reason_not_to_run
   end
 
   def do_compute_auxiliary_data
@@ -227,6 +226,19 @@ class AdminController < ApplicationController
     end
 
     redirect_to :admin_check_regional_records
+  end
+
+  def generate_exports
+  end
+
+  def do_generate_dev_export
+    DumpDeveloperDatabase.perform_later(force_export: true) unless DumpDeveloperDatabase.in_progress?
+    redirect_to admin_generate_exports_path
+  end
+
+  def do_generate_public_export
+    DumpPublicResultsDatabase.perform_later(force_export: true) unless DumpPublicResultsDatabase.in_progress?
+    redirect_to admin_generate_exports_path
   end
 
   def all_voters
