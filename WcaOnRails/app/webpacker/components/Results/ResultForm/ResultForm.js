@@ -13,7 +13,7 @@ import AfterActionMessage from './AfterActionMessage';
 import useSaveAction from '../../../lib/hooks/useSaveAction';
 import { average, best } from '../../../lib/wca-live/attempts';
 import { shouldComputeAverage, getExpectedSolveCount } from '../../../lib/helpers/results';
-import { resultUrl, competitionAllResultsUrl } from '../../../lib/requests/routes.js.erb';
+import { resultUrl, competitionAllResultsUrl, adminFixResultsUrl } from '../../../lib/requests/routes.js.erb';
 import { countries } from '../../../lib/wca-data.js.erb';
 import './ResultForm.scss';
 
@@ -180,7 +180,21 @@ function ResultForm({
           disabled={saving}
           href={competitionAllResultsUrl(roundData.competitionId, roundData.eventId)}
         >
-          Go back to results
+          Go to competition results
+        </Button>
+        <Button
+          secondary
+          as="a"
+          loading={saving}
+          disabled={saving}
+          href={adminFixResultsUrl(
+            personData.wcaId,
+            roundData.competitionId,
+            roundData.eventId,
+            roundData.roundTypeId,
+          )}
+        >
+          Go to Fix results
         </Button>
       </div>
       {id && (
