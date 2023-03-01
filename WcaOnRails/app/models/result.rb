@@ -6,12 +6,15 @@ class Result < ApplicationRecord
   self.table_name = "Results"
 
   belongs_to :person, -> { current }, primary_key: :wca_id, foreign_key: :personId
+  alias_attribute :person_name, :personName
   validates :personName, presence: true
   alias_attribute :person_id, :personId
   alias_attribute :person_name, :personName
   belongs_to :country, foreign_key: :countryId
   alias_attribute :country_id, :countryId
   belongs_to :inbox_person, primary_key: :id, foreign_key: :personId, optional: true
+  has_one :continent, through: :country
+  delegate :continent_id, :continent, to: :country
 
   # NOTE: both nil and "" exist in the database, we may consider cleaning that up.
   MARKERS = [nil, "", "NR", "ER", "WR", "AfR", "AsR", "NAR", "OcR", "SAR"].freeze
@@ -25,17 +28,16 @@ class Result < ApplicationRecord
 
   # If saving changes to personId, make sure that there is no results for
   # that person yet for the round.
-  validate :unique_result_per_round, if: -> do
+  validate :unique_result_per_round, if: lambda {
     will_save_change_to_personId? || will_save_change_to_competitionId? || will_save_change_to_eventId? || will_save_change_to_roundTypeId?
-  end
+  }
+
   def unique_result_per_round
     has_result = Result.where(competitionId: competitionId,
                               personId: personId,
                               eventId: eventId,
                               roundTypeId: roundTypeId).any?
-    if has_result
-      errors.add(:personId, "this WCA ID already has a result for that round")
-    end
+    errors.add(:personId, "this WCA ID already has a result for that round") if has_result
   end
 
   scope :final, -> { where(roundTypeId: RoundType.final_rounds.map(&:id)) }
@@ -43,12 +45,10 @@ class Result < ApplicationRecord
   scope :average_succeeded, -> { where("average > 0") }
   scope :podium, -> { final.succeeded.where(pos: [1..3]) }
   scope :winners, -> { final.succeeded.where(pos: 1).joins(:event).order("Events.rank") }
-  scope :before, lambda { |date|
-    joins(:competition).where("end_date < ?", date)
-  }
-  scope :single_better_than, lambda { |time| where("best < ? AND best > 0", time) }
-  scope :average_better_than, lambda { |time| where("average < ? AND average > 0", time) }
-  scope :in_event, lambda { |event_id| where(eventId: event_id) }
+  scope :before, ->(date) { joins(:competition).where("end_date < ?", date) }
+  scope :single_better_than, ->(time) { where("best < ? AND best > 0", time) }
+  scope :average_better_than, ->(time) { where("average < ? AND average > 0", time) }
+  scope :in_event, ->(event_id) { where(eventId: event_id) }
 
   alias_attribute :name, :personName
   alias_attribute :wca_id, :personId
