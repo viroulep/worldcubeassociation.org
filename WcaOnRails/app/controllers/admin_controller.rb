@@ -8,6 +8,7 @@ class AdminController < ApplicationController
   before_action -> { redirect_to_root_unless_user(:can_see_eligible_voters?) }, only: [:all_voters, :leader_senior_voters]
 
   before_action :compute_navbar_data
+
   def compute_navbar_data
     @pending_avatars_count = User.where.not(pending_avatar: nil).count
     @pending_media_count = CompetitionMedium.pending.count
@@ -251,6 +252,61 @@ class AdminController < ApplicationController
     end
 
     render 'anonymize_person'
+  end
+
+  def finish_unfinished_persons
+    @finish_persons = FinishPersonsForm.new(
+      params[:competition_id] || nil,
+    )
+  end
+
+  def do_finish_unfinished_persons
+    action_params = params.require(:finish_persons_form)
+                          .permit(:competition_id)
+
+    @finish_persons = FinishPersonsForm.new(action_params)
+    @persons_to_finish = @finish_persons.search_persons
+
+    render :finish_unfinished_persons
+  end
+
+  def do_complete_persons
+    # memoize all WCA IDs, especially useful if we have several identical semi-IDs in the same batch
+    # (siblings with the same last name competing as newcomers at the same competition etc.)
+    wca_id_index = Person.pluck(:wca_id)
+
+    ActiveRecord::Base.transaction do
+      params[:person_completions].each do |person_key, procedure|
+        old_name, old_country, pending_person_id, pending_competition_id = person_key.split '|'
+
+        case procedure[:action]
+        when "skip"
+          next
+        when "create"
+          new_name = procedure[:new_name]
+          new_country = procedure[:new_country]
+          new_semi_id = procedure[:new_semi_id]
+
+          new_id, wca_id_index = FinishUnfinishedPersons.complete_wca_id(new_semi_id, wca_id_index)
+
+          inbox_person = InboxPerson.where(id: pending_person_id)
+                                    .where(competitionId: pending_competition_id)
+                                    .first
+
+          FinishUnfinishedPersons.insert_person(inbox_person, new_name, new_country, new_id)
+          FinishUnfinishedPersons.adapt_results(inbox_person.id, inbox_person.name, inbox_person.countryId, new_id, new_name, new_country, pending_competition_id)
+        else
+          action, merge_id = procedure[:action].split '-'
+          raise "Invalid action: #{action}" unless action == "merge"
+
+          new_person = Person.find(merge_id)
+
+          FinishUnfinishedPersons.adapt_results(nil, old_name, old_country, new_person.wca_id, new_person.name, new_person.countryId)
+        end
+      end
+    end
+
+    redirect_to :admin_finish_persons
   end
 
   def reassign_wca_id
