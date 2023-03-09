@@ -4,6 +4,7 @@ class InboxPerson < ApplicationRecord
   self.table_name = "InboxPersons"
 
   alias_attribute :wca_id, :wcaId
+  alias_attribute :competition_id, :competitionId
 
   validates :name, presence: true
   validates :dob, presence: true

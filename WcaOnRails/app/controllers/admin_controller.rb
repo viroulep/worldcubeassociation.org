@@ -99,9 +99,98 @@ class AdminController < ApplicationController
       @competition.update(results_submitted_at: nil)
       flash[:success] = "Results submission cleared."
     else
-      flash[:danger] = "Could not clear the results submission. Maybe results are alredy posted, or there is no submission."
+      flash[:danger] = "Could not clear the results submission. Maybe results are already posted, or there is no submission."
     end
     redirect_to competition_admin_upload_results_edit_path
+  end
+
+  def post_results
+    @competition = competition_from_params
+
+    data_tables = {
+      result: Result,
+      scramble: Scramble,
+      inbox_result: InboxResult,
+      inbox_person: InboxPerson,
+      newcomer_person: InboxPerson.where(wcaId: ''),
+      newcomer_result: Result.where("personId REGEXP '^[0-9]+$'"),
+    }
+
+    @existing_data = data_tables.transform_values { |table| table.where(competitionId: @competition.id).count }
+  end
+
+  def import_inbox_results
+    @competition = competition_from_params
+
+    ActiveRecord::Base.transaction do
+      @competition.inbox_results
+                  .joins("LEFT JOIN InboxPersons ON InboxPersons.id = InboxResults.personId AND InboxPersons.competitionId = InboxResults.competitionId")
+                  .select("InboxResults.*, InboxPersons.wcaId AS personWcaId, InboxPersons.countryId AS personCountryIso2")
+                  .each do |inbox_res|
+        person_id = inbox_res.personWcaId.presence || inbox_res.personId
+        person_country = Country.find_by_iso2(inbox_res.personCountryIso2)
+
+        # TODO: This runs a lot of validations and is slow(ish, aka. bearable but could be faster).
+        #   Is it safe to just let Results Team insert rows without Rails validations?
+        created_res = Result.create(
+          pos: inbox_res.pos,
+          personId: person_id,
+          personName: inbox_res.personName,
+          countryId: person_country.id,
+          competitionId: inbox_res.competitionId,
+          eventId: inbox_res.eventId,
+          roundTypeId: inbox_res.roundTypeId,
+          formatId: inbox_res.formatId,
+          value1: inbox_res.value1,
+          value2: inbox_res.value2,
+          value3: inbox_res.value3,
+          value4: inbox_res.value4,
+          value5: inbox_res.value5,
+          best: inbox_res.best,
+          average: inbox_res.average,
+        )
+
+        unless created_res.valid?
+          raise "Invalid Result when imported from InboxResult: #{created_res.errors.full_messages}"
+        end
+      end
+    end
+
+    redirect_to competition_admin_post_results_path
+  end
+
+  def delete_inbox_results
+    @competition = competition_from_params
+
+    InboxResult.destroy_by(competitionId: @competition.id)
+    redirect_to competition_admin_post_results_path
+  end
+
+  def delete_inbox_persons
+    @competition = competition_from_params
+
+    # Ugly hack because we don't have primary keys on InboxPerson, also see comment on `InboxPerson#delete`
+    @competition.inbox_persons.each(&:delete)
+
+    redirect_to competition_admin_post_results_path
+  end
+
+  def delete_results_data
+    @competition = competition_from_params
+
+    case params[:table]
+    when "All"
+      Result.destroy_by(competitionId: @competition.id)
+      Scramble.destroy_by(competitionId: @competition.id)
+    when "Result"
+      Result.destroy_by(competitionId: @competition.id, eventId: params[:event], roundTypeId: params[:roundType])
+    when "Scramble"
+      Scramble.destroy_by(competitionId: @competition.id, eventId: params[:event], roundTypeId: params[:roundType])
+    else
+      raise "Invalid table: #{params[:table]}"
+    end
+
+    redirect_to competition_admin_post_results_path
   end
 
   def create_results
