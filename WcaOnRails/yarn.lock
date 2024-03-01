@@ -3927,10 +3927,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.35.0":
-  version: 3.35.0
-  resolution: "core-js@npm:3.35.0"
-  checksum: 1d545ff4406f2afa5e681f44b45ed5f7f119d158b380234d5aa7787ce7e47fc7a635b98b74c28c766ba8191e3db8c2316ad6ab4ff1ddecbc3fd618413a52c29c
+"core-js@npm:^3.36.0":
+  version: 3.36.0
+  resolution: "core-js@npm:3.36.0"
+  checksum: 62dcb41ba79ead581e4c5b2740ae18bfe6ee230e853893736d16edb01b580574d8645ff6c5513d1c75d59620f8451aee45c119d3c4f5ebc66cff5f003a816864
   languageName: node
   linkType: hard
 
@@ -9284,7 +9284,7 @@ __metadata:
     blueimp-load-image: "npm:^5.16.0"
     classnames: "npm:^2.5.1"
     compression-webpack-plugin: "npm:^10.0.0"
-    core-js: "npm:^3.35.0"
+    core-js: "npm:^3.36.0"
     css-loader: "npm:^6.8.1"
     css-minimizer-webpack-plugin: "npm:^5.0.1"
     dompurify: "npm:^3.0.6"
